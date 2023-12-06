@@ -1,0 +1,20 @@
+apiVersion: v2
+name: oneblock
+description: A Helm chart for oneblock.ai
+type: application
+version: 0.0.1
+appVersion: "0.0.1-dev"
+keywords:
+- LLMOps
+- Cloud-native LLMOps
+home: https://github.com/oneblock-ai/oneblock
+sources:
+- https://github.com/oneblock-ai/oneblock
+dependencies:
+- name: kuberay-operator
+  version: "1.0.0"
+  repository: "https://ray-project.github.io/kuberay-helm"
+  condition: kuberay-operator.enabled
+  tags:
+  - ml-framework
+  - ray.io

@@ -1,0 +1,63 @@
+FROM golang:1.21.4-bookworm
+
+ARG DAPPER_HOST_ARCH
+ENV ARCH $DAPPER_HOST_ARCH
+
+RUN apt-get update -qq && apt-get install -y --no-install-recommends \
+    xz-utils \
+    unzip \
+    zstd \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# install yq
+RUN GO111MODULE=on go install github.com/mikefarah/yq/v4@v4.27.5
+# set up helm
+ENV HELM_VERSION v3.5.4
+ENV HELM_URL=https://get.helm.sh/helm-${HELM_VERSION}-linux-${ARCH}.tar.gz
+RUN mkdir /usr/tmp && \
+    curl ${HELM_URL} | tar xvzf - --strip-components=1 -C /usr/tmp/ && \
+    mv /usr/tmp/helm /usr/bin/helm
+
+# -- for make rules
+## install docker client
+RUN apt-get update -qq && apt-get install -y --no-install-recommends \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg \
+    rsync \
+    && rm -rf /var/lib/apt/lists/*; \
+    \
+    curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - >/dev/null; \
+    echo "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/debian buster stable" > /etc/apt/sources.list.d/docker.list; \
+    \
+    apt-get update -qq && apt-get install -y --no-install-recommends \
+    docker-ce=5:20.10.* \
+    && rm -rf /var/lib/apt/lists/*
+## install golangci
+RUN if [ "${ARCH}" = "amd64" ]; then \
+    curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.49.0; \
+    fi
+## install controller-gen
+RUN if [ "${ARCH}" = "amd64" ]; then \
+    GO111MODULE=on go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.13.0; \
+    fi
+## install ginkgo
+RUN if [ "${ARCH}" = "amd64" ]; then \
+    GO111MODULE=on go install github.com/onsi/ginkgo/v2/ginkgo@v2.1.4; \
+    fi
+
+# -- for dapper
+ENV DAPPER_RUN_ARGS --privileged --network host
+ENV GO111MODULE off
+ENV DAPPER_ENV REPO TAG CROSS GOPROXY GITHUB_REF_NAME CODECOV_TOKEN
+ENV DAPPER_SOURCE /go/src/github.com/oneblock-ai/oneblock/
+ENV DAPPER_OUTPUT ./bin ./dist
+ENV DAPPER_DOCKER_SOCKET true
+ENV HOME ${DAPPER_SOURCE}
+# -- for dapper
+
+WORKDIR ${DAPPER_SOURCE}
+ENTRYPOINT ["./scripts/entry"]
+CMD ["ci"]

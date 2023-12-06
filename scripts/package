@@ -1,0 +1,22 @@
+#!/bin/bash
+set -e
+
+source $(dirname "$0")/version
+
+cd $(dirname "$0")/..
+
+mkdir -p dist/artifacts
+cp bin/oneblock dist/artifacts/oneblock"${SUFFIX}"
+
+cd $(dirname "$0")/package
+
+IMAGE=${REPO}/oneblock:${TAG}
+DOCKERFILE=Dockerfile
+if [ -e ${DOCKERFILE}.${ARCH} ]; then
+    DOCKERFILE=${DOCKERFILE}.${ARCH}
+fi
+
+cp ../bin/oneblock .
+
+docker build --build-arg VERSION="${VERSION}" -f "${DOCKERFILE}" -t "${IMAGE}" .
+echo Built "${IMAGE}"
