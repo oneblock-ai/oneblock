@@ -57,3 +57,25 @@ affinity: {}
 
 kuberay-operator:
   enabled: true
+
+qdrant:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: qdrant/qdrant
+    pullPolicy: IfNotPresent
+    tag: ""
+    useUnprivilegedImage: false
+
+  persistence:
+    accessModes: ["ReadWriteOnce"]
+    size: 10Gi
+    annotations: {}
+    # storageClassName: local-path
+
+  # only supported for single node qdrant clusters.
+  snapshotRestoration:
+    enabled: false
+    pvcName: snapshots-pvc
+    snapshots:
+    #  - /qdrant/snapshots/test_collection/test_collection-2022-10-24-13-56-50.snapshot:test_collection

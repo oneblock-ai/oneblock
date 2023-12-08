@@ -18,3 +18,9 @@ dependencies:
   tags:
   - ml-framework
   - ray.io
+- name: qdrant
+  version: "0.6.1"
+  repository: "https://qdrant.to/helm"
+  condition: qdrant.enabled
+  tags:
+  - vector database

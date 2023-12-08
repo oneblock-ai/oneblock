@@ -1,13 +1,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "oneblock.fullname" . }}
+  name: {{ include "oneblock.fullname" . }}-apiserver
   labels:
     {{- include "oneblock.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
-  {{- end }}
   selector:
     matchLabels:
       {{- include "oneblock.selectorLabels" . | nindent 6 }}
