@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "oneblock.fullname" . }}
+  name: {{ include "oneblock.fullname" . }}-expose
   labels:
     {{- include "oneblock.labels" . | nindent 4 }}
 spec:

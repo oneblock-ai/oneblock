@@ -32,6 +32,7 @@ To deploy the 1Block.AI on your k8s cluster, you can use the following commands:
 **Install the CRDs into the cluster:**
 
 ```sh
+$ kubectl create ns -n oneblock-system
 $ helm install -n oneblock-system oneblock-crd ./deploy/charts/oneblock-crd
 ```
 
