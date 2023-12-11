@@ -11,7 +11,7 @@ mkdir -p "${out_dir}"
 rm -rf "${out_dir}/*.yaml"
 
 # Generate CRD manifest YAMLs
-controller-gen crd \
+"${ROOT_DIR}"/bin/controller-gen crd \
 	paths="${ROOT_DIR}/pkg/apis/..." \
 	output:crd:dir="${out_dir}"
 

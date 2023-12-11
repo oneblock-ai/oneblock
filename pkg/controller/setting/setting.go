@@ -27,11 +27,7 @@ func Register(_ context.Context, mgmt *config.Management) error {
 		fallback:     map[string]string{},
 	}
 
-	if err := settings.SetProvider(sp); err != nil {
-		return err
-	}
-
-	return nil
+	return settings.SetProvider(sp)
 }
 
 func (h *handler) Get(name string) string {

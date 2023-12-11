@@ -10,7 +10,7 @@ require (
 	github.com/kubernetes/dashboard v1.10.1
 	github.com/oneblock-ai/apiserver/v2 v2.0.0-20231120080835-6d0178f2cdd8
 	github.com/oneblock-ai/dynamiclistener/v2 v2.0.0-20231114071240-8bd0d400c27d
-	github.com/oneblock-ai/steve/v2 v2.0.0-20231114071653-8eade4054f47
+	github.com/oneblock-ai/steve/v2 v2.0.0-20231208071956-a554480398db
 	github.com/onsi/ginkgo/v2 v2.11.0
 	github.com/onsi/gomega v1.27.10
 	github.com/pkg/errors v0.9.1

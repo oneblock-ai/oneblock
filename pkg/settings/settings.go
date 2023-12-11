@@ -16,7 +16,7 @@ var (
 	InjectDefaults string
 	releasePattern = regexp.MustCompile("^v[0-9]")
 
-	APIUIVersion           = NewSetting("api-ui-version", "1.1.10") // Please update the ONEBLOCK_API_UI_VERSION in package/Dockerfile.bc when updating the version here.
+	APIUIVersion           = NewSetting("api-ui-version", "1.1.10") // Please update the ONEBLOCK_API_UI_VERSION in Dockerfile when updating the version here.
 	AuthSecretName         = NewSetting("auth-secret-name", "oneblock-key-holder")
 	AuthTokenMaxTTLMinutes = NewSetting("auth-token-max-ttl-minutes", "720")
 	FirstLogin             = NewSetting("first-login", "true")
