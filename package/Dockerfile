@@ -23,7 +23,7 @@ RUN mkdir -p /usr/share/oneblock-ai/oneblock && \
     curl -sL https://releases.rancher.com/api-ui/${ONEBLOCK_API_UI_VERSION}.tar.gz | tar xvzf - --strip-components=1 && \
     cd /var/lib/oneblock-ai/oneblock
 
-COPY entrypoint.sh oneblock /usr/bin/
+COPY package/entrypoint.sh oneblock /usr/bin/
 RUN chmod +x /usr/bin/entrypoint.sh
 
 VOLUME /var/lib/oneblock-ai/oneblock

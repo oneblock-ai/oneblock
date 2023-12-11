@@ -32,14 +32,21 @@ To deploy the 1Block.AI on your k8s cluster, you can use the following commands:
 **Install the CRDs into the cluster:**
 
 ```sh
-$ kubectl create ns -n oneblock-system
-$ helm install -n oneblock-system oneblock-crd ./deploy/charts/oneblock-crd
+$ make install
+```
+or
+```sh
+$ helm upgrade --install --create-namepsace -n oneblock-system oneblock-crd ./deploy/charts/oneblock-crd
 ```
 
 **Deploy the api-server to the cluster:**
 
 ```sh
-$ helm install -n oneblock-system oneblock ./deploy/charts/oneblock
+$ make deploy
+```
+or
+```sh
+$ helm upgrade --install --create-namespace -n oneblock-system oneblock ./deploy/charts/oneblock
 ```
 
 ### Uninstall
@@ -47,9 +54,11 @@ $ helm install -n oneblock-system oneblock ./deploy/charts/oneblock
 
 ```sh
 $ helm uninstall -n oneblock-system oneblock-crd
-```
-```sh
 $ helm uninstall -n oneblock-system oneblock
+```
+or
+```sh
+$ make uninstall && make undeploy
 ```
 
 ## Contributing

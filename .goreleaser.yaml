@@ -1,0 +1,84 @@
+version: 1
+
+env:
+  - OB_REPO={{ if index .Env "OB_REPO"  }}{{ .Env.OB_REPO }}{{ else }}ghcr.io/oneblock-ai{{ end }}
+
+snapshot:
+  # https://goreleaser.com/customization/snapshots/
+  name_template: '{{ trimprefix .Summary "v" }}'
+
+checksum:
+  # https://goreleaser.com/customization/checksum/
+  name_template: 'checksums.txt'
+
+builds:
+  - id: "oneblock"
+    binary: oneblock
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    tags:
+      - netgo
+    ldflags:
+      - -s
+      - -w
+      - -X "github.com/oneblock-ai/oneblock/pkg/version.Version=v{{ .Version }}"
+
+changelog:
+  use: github
+  sort: asc
+  filters:
+    exclude:
+    - "^docs:"
+    - "^test:"
+
+dockers:
+  - use: buildx
+    goos: linux
+    goarch: amd64
+    dockerfile: package/Dockerfile
+    image_templates:
+      - "{{ .Env.OB_REPO }}/oneblock:v{{ .Version }}-amd64"
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source=https://github.com/oneblock-ai/oneblock"
+      - "--platform=linux/amd64"
+    extra_files:
+      - package/entrypoint.sh
+
+  - use: buildx
+    goos: linux
+    goarch: arm64
+    dockerfile: package/Dockerfile
+    image_templates:
+      - "{{ .Env.OB_REPO }}/oneblock:v{{ .Version }}-arm64"
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source=https://github.com/oneblock-ai/oneblock"
+      - "--platform=linux/arm64"
+    extra_files:
+      - package/entrypoint.sh
+
+docker_manifests:
+  - use: docker
+    name_template: "{{ .Env.OB_REPO }}/oneblock:v{{ .Version }}"
+    image_templates:
+      - "{{ .Env.OB_REPO }}/oneblock:v{{ .Version }}-amd64"
+      - "{{ .Env.OB_REPO }}/oneblock:v{{ .Version }}-arm64"
+
+docker_signs:
+  - artifacts: all
+    stdin: "{{ .Env.COSIGN_PASSWORD }}"

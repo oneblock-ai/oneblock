@@ -26,6 +26,7 @@ func New() *cobra.Command {
 
 	rootCmd.AddCommand(
 		NewAPIServer(cmdContext),
+		NewVersion(cmdContext),
 	)
 
 	rootCmd.InitDefaultHelpCmd()

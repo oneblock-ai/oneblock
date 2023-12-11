@@ -20,8 +20,14 @@ fi
 SUFFIX="-${ARCH}"
 
 TAG=${TAG:-${VERSION}${SUFFIX}}
-REPO=${REPO:-onelbock-ai}
 
 if echo $TAG | grep -q dirty; then
     TAG=dev
+fi
+
+if [ -n "$DIRTY" ]; then
+    echo Git is dirty
+    git status
+    git diff
+    exit 1
 fi
