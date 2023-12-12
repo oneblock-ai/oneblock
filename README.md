@@ -1,8 +1,13 @@
 # 1Block.AI [WIP]
+[![main-build](https://github.com/oneblock-ai/oneblock/actions/workflows/main-release.yaml/badge.svg)](https://github.com/oneblock-ai/oneblock/actions/workflows/main-release.yaml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/oneblock-ai/oneblock)](https://goreportcard.com/report/github.com/oneblock-ai/oneblock)
+[![Releases](https://img.shields.io/github/release/oneblock-ai/oneblock.svg)](https://github.com/oneblock-ai/oneblock/releases)
+[![Discord](https://img.shields.io/discord/1178957864300191754?logo=discord&label=discord&color=5865F2)](https://discord.gg/wUekphG8)
+
+| 🚧 WARNING | 1Block.AI is a work in progress. Features will evolve over time and there may be breaking changes between releases. Please refrain from using it for any production purposes for now! |
+|------------|:--|
 
 An open-source, cloud-native LLMOps platform for LLMs and generative AI applications management.
-
-> WARNING: 1Block.AI is a work in progress. Features will evolve over time and there may be breaking changes between releases. Please refrain from using it for any production purposes for now!
 
 ## Description
 1Block.AI is an open-source, cloud-native LLMOps platform that aims to empower your innovation in LLMs and generative AI applications. It is built on top of cutting-edge technologies such as Kubernetes, Ray.io, LangChain, etc., and designed to be cloud-agnostic and ML framework agnostic.
@@ -62,10 +67,11 @@ $ make uninstall && make undeploy
 ```
 
 ## Contributing
-// TODO: Add detailed information on how you would like others to contribute to this project
+For the basics on how to contribute to 1Block.AI, checkout [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 
 ## Community
-If you're interested, please join us on [Discord](https://discord.gg/5BnNqC5ccB) or participate in [GitHub Discussions](https://github.com/oneblock-ai/oneblock/discussions) to discuss or contribute the project. We look forward to collaborating with you!
+If you're interested, please join us on [Discord](https://discord.gg/wUekphG8) or participate in [GitHub Discussions](https://github.com/oneblock-ai/oneblock/discussions) to discuss or contribute the project. We look forward to collaborating with you!
 
 If you have any feedback or issues, feel free to file a GitHub [issue](https://github.com/oneblock-ai/oneblock/issues).
 
