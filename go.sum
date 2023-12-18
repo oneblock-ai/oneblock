@@ -288,6 +288,8 @@ github.com/oneblock-ai/dynamiclistener/v2 v2.0.0-20231114071240-8bd0d400c27d h1:
 github.com/oneblock-ai/dynamiclistener/v2 v2.0.0-20231114071240-8bd0d400c27d/go.mod h1:yKX/KgxhhidYj3vQjIY7UEvRJk7H1eY2D9ox90gj2j4=
 github.com/oneblock-ai/steve/v2 v2.0.0-20231208071956-a554480398db h1:xl6Zxm1HTyEcKG1NNg0x02fI85hoLgAj+aF0V2vqhPc=
 github.com/oneblock-ai/steve/v2 v2.0.0-20231208071956-a554480398db/go.mod h1:zgkg0HZZifkTrIomVh5PtGPdaDLsUNDrhTSR6l64J20=
+github.com/oneblock-ai/webhook v0.0.0-20231218135224-857f785b7789 h1:h1157UQgwY7Hj564RJx4rBeCKCVn3tANmdnl0crl1D0=
+github.com/oneblock-ai/webhook v0.0.0-20231218135224-857f785b7789/go.mod h1:To6L+2tsy7Hq6UX0GiIyZoNNtl/afq26EfzKLtTstjc=
 github.com/onsi/ginkgo v0.0.0-20170829012221-11459a886d9c/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.11.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=

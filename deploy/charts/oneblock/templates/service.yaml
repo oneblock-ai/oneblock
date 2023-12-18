@@ -13,3 +13,18 @@ spec:
       name: https
   selector:
     {{- include "oneblock.selectorLabels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oneblock-webhook
+  labels:
+    {{- include "oneblock.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: 443
+      targetPort: {{ .Values.service.webhookTargetPort }} # keep the port same as what's specified in the apiserver cmd.
+      protocol: TCP
+      name: webhook-https
+  selector:
+    {{- include "oneblock.selectorLabels" . | nindent 4 }}
