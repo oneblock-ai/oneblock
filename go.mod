@@ -11,6 +11,7 @@ require (
 	github.com/oneblock-ai/apiserver/v2 v2.0.0-20231120080835-6d0178f2cdd8
 	github.com/oneblock-ai/dynamiclistener/v2 v2.0.0-20231114071240-8bd0d400c27d
 	github.com/oneblock-ai/steve/v2 v2.0.0-20231208071956-a554480398db
+	github.com/oneblock-ai/webhook v0.0.0-20231218135224-857f785b7789
 	github.com/onsi/ginkgo/v2 v2.11.0
 	github.com/onsi/gomega v1.27.10
 	github.com/pkg/errors v0.9.1

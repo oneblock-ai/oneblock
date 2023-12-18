@@ -40,7 +40,7 @@ service:
   ## Specify the port of HTTPs endpoint.
   ## defaults to "8443".
   httpsPort: 8443
-
+  webhookTargetPort: 8444
   ## Specify the port of HTTP endpoint,
   ## this port will be closed if set to 0.
   ## defaults to "0".
