@@ -1,5 +1,5 @@
 /*
-Copyright 2023 1block.ai.
+Copyright 2024 1block.ai.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import (
 	fakecorev1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/core.oneblock.ai/v1/fake"
 	managementv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/management.oneblock.ai/v1"
 	fakemanagementv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/management.oneblock.ai/v1/fake"
+	rayv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/ray.io/v1"
+	fakerayv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/ray.io/v1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -89,4 +91,9 @@ func (c *Clientset) CoreV1() corev1.CoreV1Interface {
 // ManagementV1 retrieves the ManagementV1Client
 func (c *Clientset) ManagementV1() managementv1.ManagementV1Interface {
 	return &fakemanagementv1.FakeManagementV1{Fake: &c.Fake}
+}
+
+// RayV1 retrieves the RayV1Client
+func (c *Clientset) RayV1() rayv1.RayV1Interface {
+	return &fakerayv1.FakeRayV1{Fake: &c.Fake}
 }

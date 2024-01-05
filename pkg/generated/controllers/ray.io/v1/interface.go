@@ -19,10 +19,10 @@ limitations under the License.
 package v1
 
 import (
-	v1 "github.com/oneblock-ai/oneblock/pkg/apis/management.oneblock.ai/v1"
 	"github.com/rancher/lasso/pkg/controller"
 	"github.com/rancher/wrangler/v2/pkg/generic"
 	"github.com/rancher/wrangler/v2/pkg/schemes"
+	v1 "github.com/ray-project/kuberay/ray-operator/apis/ray/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -31,8 +31,9 @@ func init() {
 }
 
 type Interface interface {
-	Setting() SettingController
-	User() UserController
+	RayCluster() RayClusterController
+	RayJob() RayJobController
+	RayService() RayServiceController
 }
 
 func New(controllerFactory controller.SharedControllerFactory) Interface {
@@ -45,10 +46,14 @@ type version struct {
 	controllerFactory controller.SharedControllerFactory
 }
 
-func (v *version) Setting() SettingController {
-	return generic.NewNonNamespacedController[*v1.Setting, *v1.SettingList](schema.GroupVersionKind{Group: "management.oneblock.ai", Version: "v1", Kind: "Setting"}, "settings", v.controllerFactory)
+func (v *version) RayCluster() RayClusterController {
+	return generic.NewController[*v1.RayCluster, *v1.RayClusterList](schema.GroupVersionKind{Group: "ray.io", Version: "v1", Kind: "RayCluster"}, "rayclusters", true, v.controllerFactory)
 }
 
-func (v *version) User() UserController {
-	return generic.NewNonNamespacedController[*v1.User, *v1.UserList](schema.GroupVersionKind{Group: "management.oneblock.ai", Version: "v1", Kind: "User"}, "users", v.controllerFactory)
+func (v *version) RayJob() RayJobController {
+	return generic.NewController[*v1.RayJob, *v1.RayJobList](schema.GroupVersionKind{Group: "ray.io", Version: "v1", Kind: "RayJob"}, "rayjobs", true, v.controllerFactory)
+}
+
+func (v *version) RayService() RayServiceController {
+	return generic.NewController[*v1.RayService, *v1.RayServiceList](schema.GroupVersionKind{Group: "ray.io", Version: "v1", Kind: "RayService"}, "rayservices", true, v.controllerFactory)
 }
