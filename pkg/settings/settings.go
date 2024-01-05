@@ -1,6 +1,6 @@
 package settings
 
-// referring to the code of https://github.com/harvester/harvester/blob/master/pkg/settings/settings.go
+// referred to the code of https://github.com/harvester/harvester/blob/master/pkg/settings/settings.go
 import (
 	"encoding/json"
 	"regexp"
@@ -24,7 +24,8 @@ var (
 	ServerVersion          = NewSetting("server-version", "dev")
 	UIIndex                = NewSetting("ui-index", "https://releases.1block.ai/dashboard/latest/index.html")
 	UIPath                 = NewSetting("ui-path", "/usr/share/oneblock-ai/oneblock")
-	UISource               = NewSetting("ui-source", "auto") // Options are 'auto', 'external' or 'bundled'
+	UISource               = NewSetting("ui-source", "auto")    // Options are 'auto', 'external' or 'bundled'
+	RayVersion             = NewSetting("ray-version", "2.9.0") // Default ray install version
 )
 
 func init() {

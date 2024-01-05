@@ -1,10 +1,26 @@
-replicaCount: 1
+apiserver:
+  replicaCount: 1
 
-image:
-  repository: ghcr.io/oneblock-ai/oneblock
-  pullPolicy: Always
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: "main-head"
+  image:
+    repository: ghcr.io/oneblock-ai/oneblock
+    pullPolicy: Always
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: "latest"
+
+  service:
+    type: NodePort
+    ## Specify the port of HTTPs endpoint.
+    ## defaults to "8443".
+    httpsPort: 8443
+    nodePort: 30443
+
+    ## Specify the port of HTTP endpoint,
+    ## this port will be closed if set to 0.
+    ## defaults to "0".
+    httpPort: 0
+
+    # specify the webhook port
+    webhookTargetPort: 8444
 
 imagePullSecrets: []
 nameOverride: ""
@@ -35,17 +51,6 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
-service:
-  type: ClusterIP
-  ## Specify the port of HTTPs endpoint.
-  ## defaults to "8443".
-  httpsPort: 8443
-  webhookTargetPort: 8444
-  ## Specify the port of HTTP endpoint,
-  ## this port will be closed if set to 0.
-  ## defaults to "0".
-  httpPort: 0
-
 resources: {}
 
 nodeSelector: {}
@@ -54,28 +59,32 @@ tolerations: []
 
 affinity: {}
 
-
-kuberay-operator:
+kuberayOperator:
   enabled: true
+  install: false
 
-qdrant:
+redis:
   enabled: true
-  replicaCount: 1
   image:
-    repository: qdrant/qdrant
-    pullPolicy: IfNotPresent
-    tag: ""
-    useUnprivilegedImage: false
-
-  persistence:
-    accessModes: ["ReadWriteOnce"]
-    size: 10Gi
-    annotations: {}
-    # storageClassName: local-path
-
-  # only supported for single node qdrant clusters.
-  snapshotRestoration:
-    enabled: false
-    pvcName: snapshots-pvc
-    snapshots:
-    #  - /qdrant/snapshots/test_collection/test_collection-2022-10-24-13-56-50.snapshot:test_collection
+    repository: bitnami/redis
+    tag: 7.2.3-debian-11-r2
+  replica:
+    replicaCount: 3
+  master:
+    persistence:
+      enabled: true
+      storageClass: ""
+      accessModes:
+      - ReadWriteOnce
+      size: 5Gi
+  replicas:
+    persistence:
+      enabled: true
+      storageClass: ""
+      accessModes:
+      - ReadWriteOnce
+      size: 5Gi
+  auth:
+    enabled: true
+    sentinel: true
+    password: ""

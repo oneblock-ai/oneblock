@@ -2,8 +2,8 @@ dependencies:
 - name: kuberay-operator
   repository: https://ray-project.github.io/kuberay-helm
   version: 1.0.0
-- name: qdrant
-  repository: https://qdrant.to/helm
-  version: 0.6.1
-digest: sha256:11a49087d766b9c18b38b67441a45ef622e70a9862c4fab63301cb92c0c922a1
-generated: "2023-12-06T17:18:34.185535+08:00"
+- name: redis
+  repository: https://charts.bitnami.com/bitnami
+  version: 18.6.2
+digest: sha256:379cfc174325c31bb95eacbad3a9aa0bff5cee437766785a0e824e307dd145f0
+generated: "2024-01-05T15:20:11.281715+08:00"

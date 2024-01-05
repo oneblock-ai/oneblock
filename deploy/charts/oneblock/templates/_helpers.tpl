@@ -37,17 +37,17 @@ Common labels
 helm.sh/chart: {{ include "oneblock.chart" . }}
 {{ include "oneblock.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+app.oneblock.ai/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.oneblock.ai/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
 Selector labels
 */}}
 {{- define "oneblock.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "oneblock.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+app.oneblock.ai/name: {{ include "oneblock.name" . }}
+app.oneblock.ai/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*

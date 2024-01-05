@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/oneblock-ai/steve/v2/pkg/debug"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"github.com/oneblock-ai/oneblock/pkg/server"
@@ -46,9 +47,11 @@ func (a *APIServerConfig) Run(cmd *cobra.Command, _ []string) error {
 		HTTPSListenPort:        a.HTTPSListenPort,
 		WebhookHTTPSListenPort: a.WebhookHTTPSListenPort,
 		Namespace:              a.Namespace,
+		Name:                   a.Name,
 	}
 	ob, err := server.New(cfg)
 	if err != nil {
+		logrus.Errorf("failed to init new server, error: %v", err)
 		return err
 	}
 
@@ -57,7 +60,7 @@ func (a *APIServerConfig) Run(cmd *cobra.Command, _ []string) error {
 
 func (a *APIServerConfig) init(apiCmd *cobra.Command) {
 	f := apiCmd.Flags()
-	f.StringVar(&a.Name, "name", "oneblock-server", "name of the server")
+	f.StringVar(&a.Name, "name", "oneblock", "api-server release name")
 	f.StringVar(&a.Version, "version", "dev", "version of the server")
 	f.StringVar(&a.Namespace, "namespace", "oneblock-system", "default namespace to store system resources")
 	f.IntVar(&a.Threadiness, "threadiness", 5, "controller threads")

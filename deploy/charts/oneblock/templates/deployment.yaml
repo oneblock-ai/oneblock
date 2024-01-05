@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "oneblock.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.apiserver.replicaCount }}
   selector:
     matchLabels:
       {{- include "oneblock.selectorLabels" . | nindent 6 }}
@@ -32,11 +32,11 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "{{ .Values.apiserver.image.repository }}:{{ .Values.apiserver.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.apiserver.image.pullPolicy }}
           ports:
             - name: https
-              containerPort: {{ .Values.service.httpsPort }}
+              containerPort: {{ .Values.apiserver.service.httpsPort }}
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
