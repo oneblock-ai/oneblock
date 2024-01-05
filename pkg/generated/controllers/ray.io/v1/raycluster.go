@@ -22,38 +22,38 @@ import (
 	"context"
 	"time"
 
-	v1 "github.com/oneblock-ai/oneblock/pkg/apis/core.oneblock.ai/v1"
 	"github.com/rancher/wrangler/v2/pkg/apply"
 	"github.com/rancher/wrangler/v2/pkg/condition"
 	"github.com/rancher/wrangler/v2/pkg/generic"
 	"github.com/rancher/wrangler/v2/pkg/kv"
+	v1 "github.com/ray-project/kuberay/ray-operator/apis/ray/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// DatasetController interface for managing Dataset resources.
-type DatasetController interface {
-	generic.ControllerInterface[*v1.Dataset, *v1.DatasetList]
+// RayClusterController interface for managing RayCluster resources.
+type RayClusterController interface {
+	generic.ControllerInterface[*v1.RayCluster, *v1.RayClusterList]
 }
 
-// DatasetClient interface for managing Dataset resources in Kubernetes.
-type DatasetClient interface {
-	generic.ClientInterface[*v1.Dataset, *v1.DatasetList]
+// RayClusterClient interface for managing RayCluster resources in Kubernetes.
+type RayClusterClient interface {
+	generic.ClientInterface[*v1.RayCluster, *v1.RayClusterList]
 }
 
-// DatasetCache interface for retrieving Dataset resources in memory.
-type DatasetCache interface {
-	generic.CacheInterface[*v1.Dataset]
+// RayClusterCache interface for retrieving RayCluster resources in memory.
+type RayClusterCache interface {
+	generic.CacheInterface[*v1.RayCluster]
 }
 
-type DatasetStatusHandler func(obj *v1.Dataset, status v1.DatasetStatus) (v1.DatasetStatus, error)
+type RayClusterStatusHandler func(obj *v1.RayCluster, status v1.RayClusterStatus) (v1.RayClusterStatus, error)
 
-type DatasetGeneratingHandler func(obj *v1.Dataset, status v1.DatasetStatus) ([]runtime.Object, v1.DatasetStatus, error)
+type RayClusterGeneratingHandler func(obj *v1.RayCluster, status v1.RayClusterStatus) ([]runtime.Object, v1.RayClusterStatus, error)
 
-func RegisterDatasetStatusHandler(ctx context.Context, controller DatasetController, condition condition.Cond, name string, handler DatasetStatusHandler) {
-	statusHandler := &datasetStatusHandler{
+func RegisterRayClusterStatusHandler(ctx context.Context, controller RayClusterController, condition condition.Cond, name string, handler RayClusterStatusHandler) {
+	statusHandler := &rayClusterStatusHandler{
 		client:    controller,
 		condition: condition,
 		handler:   handler,
@@ -61,28 +61,28 @@ func RegisterDatasetStatusHandler(ctx context.Context, controller DatasetControl
 	controller.AddGenericHandler(ctx, name, generic.FromObjectHandlerToHandler(statusHandler.sync))
 }
 
-func RegisterDatasetGeneratingHandler(ctx context.Context, controller DatasetController, apply apply.Apply,
-	condition condition.Cond, name string, handler DatasetGeneratingHandler, opts *generic.GeneratingHandlerOptions) {
-	statusHandler := &datasetGeneratingHandler{
-		DatasetGeneratingHandler: handler,
-		apply:                    apply,
-		name:                     name,
-		gvk:                      controller.GroupVersionKind(),
+func RegisterRayClusterGeneratingHandler(ctx context.Context, controller RayClusterController, apply apply.Apply,
+	condition condition.Cond, name string, handler RayClusterGeneratingHandler, opts *generic.GeneratingHandlerOptions) {
+	statusHandler := &rayClusterGeneratingHandler{
+		RayClusterGeneratingHandler: handler,
+		apply:                       apply,
+		name:                        name,
+		gvk:                         controller.GroupVersionKind(),
 	}
 	if opts != nil {
 		statusHandler.opts = *opts
 	}
 	controller.OnChange(ctx, name, statusHandler.Remove)
-	RegisterDatasetStatusHandler(ctx, controller, condition, name, statusHandler.Handle)
+	RegisterRayClusterStatusHandler(ctx, controller, condition, name, statusHandler.Handle)
 }
 
-type datasetStatusHandler struct {
-	client    DatasetClient
+type rayClusterStatusHandler struct {
+	client    RayClusterClient
 	condition condition.Cond
-	handler   DatasetStatusHandler
+	handler   RayClusterStatusHandler
 }
 
-func (a *datasetStatusHandler) sync(key string, obj *v1.Dataset) (*v1.Dataset, error) {
+func (a *rayClusterStatusHandler) sync(key string, obj *v1.RayCluster) (*v1.RayCluster, error) {
 	if obj == nil {
 		return obj, nil
 	}
@@ -121,20 +121,20 @@ func (a *datasetStatusHandler) sync(key string, obj *v1.Dataset) (*v1.Dataset, e
 	return obj, err
 }
 
-type datasetGeneratingHandler struct {
-	DatasetGeneratingHandler
+type rayClusterGeneratingHandler struct {
+	RayClusterGeneratingHandler
 	apply apply.Apply
 	opts  generic.GeneratingHandlerOptions
 	gvk   schema.GroupVersionKind
 	name  string
 }
 
-func (a *datasetGeneratingHandler) Remove(key string, obj *v1.Dataset) (*v1.Dataset, error) {
+func (a *rayClusterGeneratingHandler) Remove(key string, obj *v1.RayCluster) (*v1.RayCluster, error) {
 	if obj != nil {
 		return obj, nil
 	}
 
-	obj = &v1.Dataset{}
+	obj = &v1.RayCluster{}
 	obj.Namespace, obj.Name = kv.RSplit(key, "/")
 	obj.SetGroupVersionKind(a.gvk)
 
@@ -144,12 +144,12 @@ func (a *datasetGeneratingHandler) Remove(key string, obj *v1.Dataset) (*v1.Data
 		ApplyObjects()
 }
 
-func (a *datasetGeneratingHandler) Handle(obj *v1.Dataset, status v1.DatasetStatus) (v1.DatasetStatus, error) {
+func (a *rayClusterGeneratingHandler) Handle(obj *v1.RayCluster, status v1.RayClusterStatus) (v1.RayClusterStatus, error) {
 	if !obj.DeletionTimestamp.IsZero() {
 		return status, nil
 	}
 
-	objs, newStatus, err := a.DatasetGeneratingHandler(obj, status)
+	objs, newStatus, err := a.RayClusterGeneratingHandler(obj, status)
 	if err != nil {
 		return newStatus, err
 	}

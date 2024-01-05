@@ -1,5 +1,5 @@
 /*
-Copyright 2023 1block.ai.
+Copyright 2024 1block.ai.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import (
 
 	corev1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/core.oneblock.ai/v1"
 	managementv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/management.oneblock.ai/v1"
+	rayv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/ray.io/v1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
@@ -33,6 +34,7 @@ type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	CoreV1() corev1.CoreV1Interface
 	ManagementV1() managementv1.ManagementV1Interface
+	RayV1() rayv1.RayV1Interface
 }
 
 // Clientset contains the clients for groups.
@@ -40,6 +42,7 @@ type Clientset struct {
 	*discovery.DiscoveryClient
 	coreV1       *corev1.CoreV1Client
 	managementV1 *managementv1.ManagementV1Client
+	rayV1        *rayv1.RayV1Client
 }
 
 // CoreV1 retrieves the CoreV1Client
@@ -50,6 +53,11 @@ func (c *Clientset) CoreV1() corev1.CoreV1Interface {
 // ManagementV1 retrieves the ManagementV1Client
 func (c *Clientset) ManagementV1() managementv1.ManagementV1Interface {
 	return c.managementV1
+}
+
+// RayV1 retrieves the RayV1Client
+func (c *Clientset) RayV1() rayv1.RayV1Interface {
+	return c.rayV1
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -104,6 +112,10 @@ func NewForConfigAndClient(c *rest.Config, httpClient *http.Client) (*Clientset,
 	if err != nil {
 		return nil, err
 	}
+	cs.rayV1, err = rayv1.NewForConfigAndClient(&configShallowCopy, httpClient)
+	if err != nil {
+		return nil, err
+	}
 
 	cs.DiscoveryClient, err = discovery.NewDiscoveryClientForConfigAndClient(&configShallowCopy, httpClient)
 	if err != nil {
@@ -127,6 +139,7 @@ func New(c rest.Interface) *Clientset {
 	var cs Clientset
 	cs.coreV1 = corev1.New(c)
 	cs.managementV1 = managementv1.New(c)
+	cs.rayV1 = rayv1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs

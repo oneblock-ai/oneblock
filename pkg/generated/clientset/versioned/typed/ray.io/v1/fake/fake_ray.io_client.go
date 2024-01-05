@@ -19,26 +19,30 @@ limitations under the License.
 package fake
 
 import (
-	v1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/management.oneblock.ai/v1"
+	v1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/ray.io/v1"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
 )
 
-type FakeManagementV1 struct {
+type FakeRayV1 struct {
 	*testing.Fake
 }
 
-func (c *FakeManagementV1) Settings() v1.SettingInterface {
-	return &FakeSettings{c}
+func (c *FakeRayV1) RayClusters() v1.RayClusterInterface {
+	return &FakeRayClusters{c}
 }
 
-func (c *FakeManagementV1) Users() v1.UserInterface {
-	return &FakeUsers{c}
+func (c *FakeRayV1) RayJobs() v1.RayJobInterface {
+	return &FakeRayJobs{c}
+}
+
+func (c *FakeRayV1) RayServices() v1.RayServiceInterface {
+	return &FakeRayServices{c}
 }
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *FakeManagementV1) RESTClient() rest.Interface {
+func (c *FakeRayV1) RESTClient() rest.Interface {
 	var ret *rest.RESTClient
 	return ret
 }

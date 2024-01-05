@@ -1,5 +1,5 @@
 /*
-Copyright 2023 1block.ai.
+Copyright 2024 1block.ai.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ package fake
 import (
 	corev1 "github.com/oneblock-ai/oneblock/pkg/apis/core.oneblock.ai/v1"
 	managementv1 "github.com/oneblock-ai/oneblock/pkg/apis/management.oneblock.ai/v1"
+	rayv1 "github.com/ray-project/kuberay/ray-operator/apis/ray/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -34,6 +35,7 @@ var codecs = serializer.NewCodecFactory(scheme)
 var localSchemeBuilder = runtime.SchemeBuilder{
 	corev1.AddToScheme,
 	managementv1.AddToScheme,
+	rayv1.AddToScheme,
 }
 
 // AddToScheme adds all types of this clientset into the given scheme. This allows composition
