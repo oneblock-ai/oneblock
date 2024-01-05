@@ -13,6 +13,7 @@ import (
 
 	oneblockAuth "github.com/oneblock-ai/oneblock/pkg/api/auth"
 	"github.com/oneblock-ai/oneblock/pkg/controller"
+	"github.com/oneblock-ai/oneblock/pkg/data"
 	"github.com/oneblock-ai/oneblock/pkg/server/config"
 	"github.com/oneblock-ai/oneblock/pkg/webhook"
 )
@@ -46,6 +47,7 @@ type Options struct {
 	WebhookHTTPSListenPort int
 	Threadiness            int
 	Namespace              string
+	Name                   string
 }
 
 func (s *Server) setDefaults(cfg *rest.Config) (*server.Options, error) {
@@ -118,7 +120,7 @@ func New(opts Options) (*Server, error) {
 		return nil, err
 	}
 
-	return s, nil
+	return s, data.Init(s.ctx, s.mgmt, opts.Name)
 }
 
 func (s *Server) ListenAndServe(opts *dlserver.ListenOpts) error {

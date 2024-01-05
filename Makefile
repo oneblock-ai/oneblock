@@ -90,10 +90,10 @@ build: ## Build oneblock locally using goreleaser.
 # - have enabled BuildKit. More info: https://docs.docker.com/develop/develop-images/build_enhancements/
 # - be able to push the image to your registry (i.e. if you do not set a valid value via IMG=<myregistry/image:<tag>> then the export will fail)
 # To adequately provide solutions that are compatible with multiple platforms, you should consider using this option.
-OB_BUILD_VERSION = $(shell cat dist/metadata.json | jq -r .version)
-IMAGES := $(shell docker images --format "{{.Repository}}:{{.Tag}}" | grep $(OB_BUILD_VERSION))
 .PHONY: buildx
 buildx: ## Build and push docker image for the oneblock for cross-platform support
+	OB_BUILD_VERSION = $(shell cat dist/metadata.json | jq -r .version)
+	IMAGES := $(shell docker images --format "{{.Repository}}:{{.Tag}}" | grep $(OB_BUILD_VERSION))
 	for i in $(IMAGES); do \
 		echo $$i; \
 		$(CONTAINER_TOOL) push $$i; \
@@ -108,21 +108,33 @@ ifndef ignore-not-found
   ignore-not-found = false
 endif
 
-.PHONY: install
-install: manifests ## Install CRDs into the K8s cluster.
-	$(KUBECTL) apply -f deploy/charts/oneblock-crd/templates/
+.PHONY: install-crds
+install-crds: manifests ## Install CRDs into the K8s cluster.
+	$(HELM) upgrade --install --create-namespace -n oneblock-system oneblock-crd deploy/charts/oneblock-crd --reuse-values
 
-.PHONY: uninstall
-uninstall: manifests ## Uninstall CRDs from the K8s cluster.
-	$(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f deploy/charts/oneblock-crd/templates/
-
-.PHONY: deploy
-deploy: ## Deploy api-server to the K8s cluster.
-	$(HELM) upgrade --install --create-namepsace -n oneblock-system oneblock deploy/charts/oneblock
-
-.PHONY: undeploy
-undeploy: ## Undeploy api-server from the K8s cluster.
+.PHONY: uninstall-crd
+uninstall-crd: manifests ## Uninstall CRDs from the K8s cluster.
 	$(HELM) uninstall -n oneblock-system oneblock
+
+.PHONY: install-ob
+install-ob: ## Deploy api-server to the K8s cluster.
+	$(HELM) upgrade --install --create-namespace -n oneblock-system oneblock deploy/charts/oneblock --reuse-values
+
+.PHONY: uninstall-ob
+uninstall-ob: ## Undeploy api-server from the K8s cluster.
+	$(HELM) uninstall -n oneblock-system oneblock
+
+.PHONY: run-apiserver
+run-apiserver: ## Undeploy api-server from the K8s cluster.
+	go run main.go api-server --kubeconfig="~/.kube/config.yaml"
+
+##@ Helm chart
+.PHONY: helm-dep-update
+helm-dep-update: ## Update oneblock helm dependency chart
+	$(HELM) dep update ./deploy/charts/oneblock
+.PHONY: helm-lint
+helm-lint: ## Run Helm lint against oneblock chart
+	$(HELM) lint ./deploy/charts/oneblock
 
 ##@ Build Dependencies
 

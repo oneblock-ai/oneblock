@@ -5,12 +5,15 @@ metadata:
   labels:
     {{- include "oneblock.labels" . | nindent 4 }}
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ .Values.apiserver.service.type }}
   ports:
-    - port: {{ .Values.service.httpsPort }}
+    - port: {{ .Values.apiserver.service.httpsPort }}
       targetPort: https
       protocol: TCP
       name: https
+{{ if eq .Values.apiserver.service.type "NodePort" }}
+      nodePort: {{ .Values.apiserver.service.nodePort }}
+{{ end }}
   selector:
     {{- include "oneblock.selectorLabels" . | nindent 4 }}
 ---
