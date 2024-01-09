@@ -7,6 +7,7 @@ import (
 
 	obAuth "github.com/oneblock-ai/oneblock/pkg/controller/auth"
 	"github.com/oneblock-ai/oneblock/pkg/controller/dataset"
+	"github.com/oneblock-ai/oneblock/pkg/controller/kuberay/cluster"
 	"github.com/oneblock-ai/oneblock/pkg/controller/setting"
 	"github.com/oneblock-ai/oneblock/pkg/controller/user"
 	"github.com/oneblock-ai/oneblock/pkg/indexeres"
@@ -22,6 +23,7 @@ var registerFuncs = []registerFunc{
 	setting.Register,
 	dataset.Register,
 	user.Register,
+	cluster.Register,
 }
 
 func register(ctx context.Context, mgmt *config.Management) error {

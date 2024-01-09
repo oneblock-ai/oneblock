@@ -89,7 +89,8 @@ func addDefaultPublicRayCluster(ctx context.Context, mgmt *config.Management, na
 	}
 
 	annotations := map[string]string{
-		"ray.io/ft-enabled": "true", // enable Ray GCS FT
+		"ray.io/ft-enabled":                 "true", // enable Ray GCS FT
+		constant.EnabledExposeSvcAnnotation: "true", // auto generate exposed
 	}
 
 	rayStartParams := map[string]string{

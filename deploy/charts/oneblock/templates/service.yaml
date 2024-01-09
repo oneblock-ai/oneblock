@@ -26,7 +26,7 @@ metadata:
 spec:
   ports:
     - port: 443
-      targetPort: {{ .Values.service.webhookTargetPort }} # keep the port same as what's specified in the apiserver cmd.
+      targetPort: {{ .Values.apiserver.service.webhookTargetPort }} # keep the port same as what's specified in the apiserver cmd.
       protocol: TCP
       name: webhook-https
   selector:
