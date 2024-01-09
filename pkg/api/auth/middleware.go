@@ -13,6 +13,7 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
 	"github.com/oneblock-ai/oneblock/pkg/server/config"
+	"github.com/oneblock-ai/oneblock/pkg/utils"
 )
 
 func NewMiddleware(management *config.Management) *Middleware {
@@ -29,15 +30,13 @@ func (m *Middleware) AuthMiddleware(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		jweToken, err := extractJWETokenFromRequest(req)
 		if err != nil {
-			rw.WriteHeader(http.StatusUnauthorized)
-			rw.Write(ResponseBody(ErrorResponse{Errors: []string{err.Error()}}))
+			utils.ResponseError(rw, http.StatusUnauthorized, err)
 			return
 		}
 
 		userInfo, err := m.getUserInfoFromToken(jweToken)
 		if err != nil {
-			rw.WriteHeader(http.StatusUnauthorized)
-			rw.Write(ResponseBody(ErrorResponse{Errors: []string{err.Error()}}))
+			utils.ResponseError(rw, http.StatusUnauthorized, err)
 			return
 		}
 

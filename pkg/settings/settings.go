@@ -24,8 +24,14 @@ var (
 	ServerVersion          = NewSetting("server-version", "dev")
 	UIIndex                = NewSetting("ui-index", "https://releases.1block.ai/dashboard/latest/index.html")
 	UIPath                 = NewSetting("ui-path", "/usr/share/oneblock-ai/oneblock")
-	UISource               = NewSetting("ui-source", "auto")    // Options are 'auto', 'external' or 'bundled'
-	RayVersion             = NewSetting("ray-version", "2.9.0") // Default ray install version
+	UIPl                   = NewSetting(UIPlSettingName, "oneblock")
+	UISource               = NewSetting(UISourceSettingName, "auto") // Options are 'auto', 'external' or 'bundled'
+	RayVersion             = NewSetting("ray-version", "2.9.0")      // Default ray install version
+)
+
+const (
+	UIPlSettingName     = "ui-pl"
+	UISourceSettingName = "ui-source"
 )
 
 func init() {

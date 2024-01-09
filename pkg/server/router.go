@@ -8,6 +8,7 @@ import (
 	"github.com/oneblock-ai/steve/v2/pkg/ui"
 
 	"github.com/oneblock-ai/oneblock/pkg/api/auth"
+	"github.com/oneblock-ai/oneblock/pkg/api/publicui"
 	"github.com/oneblock-ai/oneblock/pkg/server/config"
 	"github.com/oneblock-ai/oneblock/pkg/settings"
 )
@@ -50,6 +51,9 @@ func (r *Router) Routes() http.Handler {
 
 	authHandler := auth.NewAuthHandler(r.mgmt)
 	m.Path("/v1-public/auth").Handler(authHandler)
+
+	publicHandler := publicui.NewPublicHandler()
+	m.Path("/v1-public/ui").Handler(publicHandler)
 
 	return m
 }

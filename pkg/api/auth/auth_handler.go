@@ -21,17 +21,13 @@ import (
 	ctlmanagementv1 "github.com/oneblock-ai/oneblock/pkg/generated/controllers/management.oneblock.ai/v1"
 	"github.com/oneblock-ai/oneblock/pkg/indexeres"
 	"github.com/oneblock-ai/oneblock/pkg/server/config"
+	"github.com/oneblock-ai/oneblock/pkg/utils"
 )
 
 type Login struct {
 	// local auth uses username and password
 	Username string `json:"username"`
 	Password string `json:"password"`
-}
-
-type ErrorResponse struct {
-	// Errors happened during request.
-	Errors []string `json:"errors,omitempty"`
 }
 
 const (
@@ -60,8 +56,7 @@ func NewAuthHandler(mgmt *config.Management) *Handler {
 
 func (h *Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		rw.WriteHeader(http.StatusMethodNotAllowed)
-		rw.Write(ResponseBody(ErrorResponse{Errors: []string{"Only POST method is supported"}}))
+		utils.ResponseError(rw, http.StatusMethodNotAllowed, fmt.Errorf("only POST method is supported"))
 		return
 	}
 
@@ -76,33 +71,32 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 			Expires: time.Unix(1, 0), //January 1, 1970 UTC
 		}
 		http.SetCookie(rw, tokenCookie)
-		rw.WriteHeader(http.StatusOK)
-		rw.Write([]byte("success logout"))
+		utils.ResponseOKWithBody(rw, []byte("success logout"))
 		return
 	}
 
 	if action != loginActionName {
 		rw.WriteHeader(http.StatusBadRequest)
-		rw.Write(ResponseBody(ErrorResponse{Errors: []string{"Unsupported action"}}))
+		utils.ResponseError(rw, http.StatusBadRequest, fmt.Errorf("unsupported action"))
 		return
 	}
 
 	var input Login
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		rw.WriteHeader(http.StatusBadRequest)
-		rw.Write(ResponseBody(ErrorResponse{Errors: []string{"Failed to decode request body, " + err.Error()}}))
+		utils.ResponseError(rw, http.StatusBadRequest, fmt.Errorf("failed to decode request body, %s", err.Error()))
 		return
 	}
 
 	tokenResp, err := h.login(&input)
+	var header int
 	if err != nil {
 		var e *apierror.APIError
 		if errors.As(err, &e) {
-			rw.WriteHeader(e.Code.Status)
+			header = e.Code.Status
 		} else {
-			rw.WriteHeader(http.StatusInternalServerError)
+			header = http.StatusInternalServerError
 		}
-		rw.Write(ResponseBody(ErrorResponse{Errors: []string{err.Error()}}))
+		utils.ResponseError(rw, header, err)
 		return
 	}
 
@@ -114,8 +108,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(rw, tokenCookie)
 	rw.Header().Set("Content-type", "application/json")
-	rw.WriteHeader(http.StatusOK)
-	rw.Write([]byte("login success"))
+	utils.ResponseOKWithBody(rw, "login success")
 }
 
 func (h *Handler) login(input *Login) (token string, err error) {
@@ -150,7 +143,7 @@ func (h *Handler) userLogin(input *Login) (*clientcmdapi.AuthInfo, error) {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(pwd)); err != nil {
-		logrus.Warnf("invalid password , error: %v", err)
+		logrus.Warnf("invalid password, error: %v", err)
 		return nil, apierror.NewAPIError(validation.Unauthorized, "authentication failed")
 	}
 
@@ -175,12 +168,4 @@ func (h *Handler) getUser(username string) (*managementv1.User, error) {
 		return nil, errors.New("found more than one users with username " + username)
 	}
 	return objs[0], nil
-}
-
-func ResponseBody(obj interface{}) []byte {
-	respBody, err := json.Marshal(obj)
-	if err != nil {
-		return []byte(fmt.Sprintf("failed to marshal response body, %s", err.Error()))
-	}
-	return respBody
 }
