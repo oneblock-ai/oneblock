@@ -14,7 +14,7 @@ dependencies:
 - name: kuberay-operator
   version: "1.0.0"
   repository: "https://ray-project.github.io/kuberay-helm"
-  condition: kuberayOperator.enabled
+  condition: kuberay-operator.enabled
   tags:
   - ml-framework
   - ray.io
@@ -24,3 +24,10 @@ dependencies:
   condition: redis.enabled
   tags:
   - redis
+- name: gpu-operator
+  version: 23.9.1
+  repository: https://helm.ngc.nvidia.com/nvidia
+  condition: gpu-operator.enabled
+  tags:
+  - gpu-operator
+  - nvidia

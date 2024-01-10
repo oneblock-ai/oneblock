@@ -16,6 +16,7 @@ import (
 	"github.com/oneblock-ai/oneblock/pkg/auth"
 	obcorev1 "github.com/oneblock-ai/oneblock/pkg/generated/controllers/core.oneblock.ai"
 	obmgmtv1 "github.com/oneblock-ai/oneblock/pkg/generated/controllers/management.oneblock.ai"
+	nvidiav1 "github.com/oneblock-ai/oneblock/pkg/generated/controllers/nvidia.com"
 	kuberayv1 "github.com/oneblock-ai/oneblock/pkg/generated/controllers/ray.io"
 )
 
@@ -31,6 +32,7 @@ type Management struct {
 	CoreFactory         *corev1.Factory
 	RbacFactory         *rbacv1.Factory
 	KubeRayFactory      *kuberayv1.Factory
+	NvidiaFactory       *nvidiav1.Factory
 	TokenManager        dashboardapi.TokenManager
 
 	starters []start.Starter
@@ -98,6 +100,13 @@ func SetupManagement(ctx context.Context, restConfig *rest.Config, namespace str
 	}
 	mgmt.KubeRayFactory = kuberay
 	mgmt.starters = append(mgmt.starters, kuberay)
+
+	nvidia, err := nvidiav1.NewFactoryFromConfigWithOptions(restConfig, factoryOpts)
+	if err != nil {
+		return nil, err
+	}
+	mgmt.NvidiaFactory = nvidia
+	mgmt.starters = append(mgmt.starters, nvidia)
 
 	mgmt.TokenManager, err = auth.NewJWETokenManager(core.Core().V1().Secret(), namespace)
 	if err != nil {

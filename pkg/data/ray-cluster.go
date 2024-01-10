@@ -44,7 +44,7 @@ func addDefaultPublicRayCluster(ctx context.Context, mgmt *config.Management, na
 	// skip if default ray cluster is already created
 	ray, err := handler.rayCluster.Get(defaultPublicNamespace, defaultRayClusterName, metav1.GetOptions{})
 	if ray != nil && err == nil {
-		logrus.Infof("skip creating default ray cluster %s:%s, already exist", ray.Name, ray.Namespace)
+		logrus.Infof("skip creating default ray cluster %s:%s, already exist", ray.Namespace, ray.Name)
 		return nil
 	}
 

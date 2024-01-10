@@ -24,6 +24,8 @@ import (
 	fakecorev1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/core.oneblock.ai/v1/fake"
 	managementv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/management.oneblock.ai/v1"
 	fakemanagementv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/management.oneblock.ai/v1/fake"
+	nvidiav1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/nvidia.com/v1"
+	fakenvidiav1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/nvidia.com/v1/fake"
 	rayv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/ray.io/v1"
 	fakerayv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/ray.io/v1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -91,6 +93,11 @@ func (c *Clientset) CoreV1() corev1.CoreV1Interface {
 // ManagementV1 retrieves the ManagementV1Client
 func (c *Clientset) ManagementV1() managementv1.ManagementV1Interface {
 	return &fakemanagementv1.FakeManagementV1{Fake: &c.Fake}
+}
+
+// NvidiaV1 retrieves the NvidiaV1Client
+func (c *Clientset) NvidiaV1() nvidiav1.NvidiaV1Interface {
+	return &fakenvidiav1.FakeNvidiaV1{Fake: &c.Fake}
 }
 
 // RayV1 retrieves the RayV1Client
