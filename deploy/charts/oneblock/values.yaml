@@ -88,3 +88,6 @@ redis:
     enabled: true
     sentinel: true
     password: ""
+
+gpu-operator:
+  enable: true

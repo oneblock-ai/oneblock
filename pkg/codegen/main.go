@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	nvidiav1 "github.com/NVIDIA/gpu-operator/api/v1"
 	controllergen "github.com/rancher/wrangler/v2/pkg/controller-gen"
 	"github.com/rancher/wrangler/v2/pkg/controller-gen/args"
 	rayv1 "github.com/ray-project/kuberay/ray-operator/apis/ray/v1"
@@ -12,6 +13,7 @@ const (
 	oneblockCoreGV = "core.oneblock.ai"
 	oneblockMgmtGV = "management.oneblock.ai"
 	kubeRayGV      = "ray.io"
+	nvidiaGV       = "nvidia.com"
 )
 
 func main() {
@@ -45,7 +47,15 @@ func main() {
 					rayv1.RayJob{},
 					rayv1.RayService{},
 				},
-				GenerateTypes:   true,
+				GenerateTypes:   false,
+				GenerateClients: true,
+			},
+			nvidiaGV: {
+				PackageName: nvidiaGV,
+				Types: []interface{}{
+					nvidiav1.ClusterPolicy{},
+				},
+				GenerateTypes:   false,
 				GenerateClients: true,
 			},
 		},

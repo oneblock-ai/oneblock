@@ -24,6 +24,7 @@ import (
 
 	corev1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/core.oneblock.ai/v1"
 	managementv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/management.oneblock.ai/v1"
+	nvidiav1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/nvidia.com/v1"
 	rayv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/ray.io/v1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
@@ -34,6 +35,7 @@ type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	CoreV1() corev1.CoreV1Interface
 	ManagementV1() managementv1.ManagementV1Interface
+	NvidiaV1() nvidiav1.NvidiaV1Interface
 	RayV1() rayv1.RayV1Interface
 }
 
@@ -42,6 +44,7 @@ type Clientset struct {
 	*discovery.DiscoveryClient
 	coreV1       *corev1.CoreV1Client
 	managementV1 *managementv1.ManagementV1Client
+	nvidiaV1     *nvidiav1.NvidiaV1Client
 	rayV1        *rayv1.RayV1Client
 }
 
@@ -53,6 +56,11 @@ func (c *Clientset) CoreV1() corev1.CoreV1Interface {
 // ManagementV1 retrieves the ManagementV1Client
 func (c *Clientset) ManagementV1() managementv1.ManagementV1Interface {
 	return c.managementV1
+}
+
+// NvidiaV1 retrieves the NvidiaV1Client
+func (c *Clientset) NvidiaV1() nvidiav1.NvidiaV1Interface {
+	return c.nvidiaV1
 }
 
 // RayV1 retrieves the RayV1Client
@@ -112,6 +120,10 @@ func NewForConfigAndClient(c *rest.Config, httpClient *http.Client) (*Clientset,
 	if err != nil {
 		return nil, err
 	}
+	cs.nvidiaV1, err = nvidiav1.NewForConfigAndClient(&configShallowCopy, httpClient)
+	if err != nil {
+		return nil, err
+	}
 	cs.rayV1, err = rayv1.NewForConfigAndClient(&configShallowCopy, httpClient)
 	if err != nil {
 		return nil, err
@@ -139,6 +151,7 @@ func New(c rest.Interface) *Clientset {
 	var cs Clientset
 	cs.coreV1 = corev1.New(c)
 	cs.managementV1 = managementv1.New(c)
+	cs.nvidiaV1 = nvidiav1.New(c)
 	cs.rayV1 = rayv1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)

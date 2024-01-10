@@ -14,7 +14,7 @@ func NewPublicHandler() *Handler {
 	return &Handler{}
 }
 
-func (h *Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+func (h *Handler) ServeHTTP(rw http.ResponseWriter, _ *http.Request) {
 	utils.ResponseOKWithBody(rw, map[string]string{
 		settings.UIPlSettingName:     settings.UIPl.Get(),
 		settings.UISourceSettingName: getUISource(),

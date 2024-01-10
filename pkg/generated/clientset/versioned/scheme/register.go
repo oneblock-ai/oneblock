@@ -19,6 +19,7 @@ limitations under the License.
 package scheme
 
 import (
+	nvidiav1 "github.com/NVIDIA/gpu-operator/api/v1"
 	corev1 "github.com/oneblock-ai/oneblock/pkg/apis/core.oneblock.ai/v1"
 	managementv1 "github.com/oneblock-ai/oneblock/pkg/apis/management.oneblock.ai/v1"
 	rayv1 "github.com/ray-project/kuberay/ray-operator/apis/ray/v1"
@@ -35,6 +36,7 @@ var ParameterCodec = runtime.NewParameterCodec(Scheme)
 var localSchemeBuilder = runtime.SchemeBuilder{
 	corev1.AddToScheme,
 	managementv1.AddToScheme,
+	nvidiav1.AddToScheme,
 	rayv1.AddToScheme,
 }
 
