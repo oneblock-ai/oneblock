@@ -21,29 +21,34 @@ package v1
 import (
 	"net/http"
 
-	v1 "github.com/oneblock-ai/oneblock/pkg/apis/core.oneblock.ai/v1"
+	v1 "github.com/oneblock-ai/oneblock/pkg/apis/ml.oneblock.ai/v1"
 	"github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
 
-type CoreV1Interface interface {
+type MlV1Interface interface {
 	RESTClient() rest.Interface
 	DatasetsGetter
+	NotebooksGetter
 }
 
-// CoreV1Client is used to interact with features provided by the core.oneblock.ai group.
-type CoreV1Client struct {
+// MlV1Client is used to interact with features provided by the ml.oneblock.ai group.
+type MlV1Client struct {
 	restClient rest.Interface
 }
 
-func (c *CoreV1Client) Datasets(namespace string) DatasetInterface {
+func (c *MlV1Client) Datasets(namespace string) DatasetInterface {
 	return newDatasets(c, namespace)
 }
 
-// NewForConfig creates a new CoreV1Client for the given config.
+func (c *MlV1Client) Notebooks(namespace string) NotebookInterface {
+	return newNotebooks(c, namespace)
+}
+
+// NewForConfig creates a new MlV1Client for the given config.
 // NewForConfig is equivalent to NewForConfigAndClient(c, httpClient),
 // where httpClient was generated with rest.HTTPClientFor(c).
-func NewForConfig(c *rest.Config) (*CoreV1Client, error) {
+func NewForConfig(c *rest.Config) (*MlV1Client, error) {
 	config := *c
 	if err := setConfigDefaults(&config); err != nil {
 		return nil, err
@@ -55,9 +60,9 @@ func NewForConfig(c *rest.Config) (*CoreV1Client, error) {
 	return NewForConfigAndClient(&config, httpClient)
 }
 
-// NewForConfigAndClient creates a new CoreV1Client for the given config and http client.
+// NewForConfigAndClient creates a new MlV1Client for the given config and http client.
 // Note the http client provided takes precedence over the configured transport values.
-func NewForConfigAndClient(c *rest.Config, h *http.Client) (*CoreV1Client, error) {
+func NewForConfigAndClient(c *rest.Config, h *http.Client) (*MlV1Client, error) {
 	config := *c
 	if err := setConfigDefaults(&config); err != nil {
 		return nil, err
@@ -66,12 +71,12 @@ func NewForConfigAndClient(c *rest.Config, h *http.Client) (*CoreV1Client, error
 	if err != nil {
 		return nil, err
 	}
-	return &CoreV1Client{client}, nil
+	return &MlV1Client{client}, nil
 }
 
-// NewForConfigOrDie creates a new CoreV1Client for the given config and
+// NewForConfigOrDie creates a new MlV1Client for the given config and
 // panics if there is an error in the config.
-func NewForConfigOrDie(c *rest.Config) *CoreV1Client {
+func NewForConfigOrDie(c *rest.Config) *MlV1Client {
 	client, err := NewForConfig(c)
 	if err != nil {
 		panic(err)
@@ -79,9 +84,9 @@ func NewForConfigOrDie(c *rest.Config) *CoreV1Client {
 	return client
 }
 
-// New creates a new CoreV1Client for the given RESTClient.
-func New(c rest.Interface) *CoreV1Client {
-	return &CoreV1Client{c}
+// New creates a new MlV1Client for the given RESTClient.
+func New(c rest.Interface) *MlV1Client {
+	return &MlV1Client{c}
 }
 
 func setConfigDefaults(config *rest.Config) error {
@@ -99,7 +104,7 @@ func setConfigDefaults(config *rest.Config) error {
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *CoreV1Client) RESTClient() rest.Interface {
+func (c *MlV1Client) RESTClient() rest.Interface {
 	if c == nil {
 		return nil
 	}

@@ -19,7 +19,7 @@ limitations under the License.
 package v1
 
 import (
-	v1 "github.com/oneblock-ai/oneblock/pkg/apis/core.oneblock.ai/v1"
+	v1 "github.com/oneblock-ai/oneblock/pkg/apis/ml.oneblock.ai/v1"
 	"github.com/rancher/lasso/pkg/controller"
 	"github.com/rancher/wrangler/v2/pkg/generic"
 	"github.com/rancher/wrangler/v2/pkg/schemes"
@@ -32,6 +32,7 @@ func init() {
 
 type Interface interface {
 	Dataset() DatasetController
+	Notebook() NotebookController
 }
 
 func New(controllerFactory controller.SharedControllerFactory) Interface {
@@ -45,5 +46,9 @@ type version struct {
 }
 
 func (v *version) Dataset() DatasetController {
-	return generic.NewController[*v1.Dataset, *v1.DatasetList](schema.GroupVersionKind{Group: "core.oneblock.ai", Version: "v1", Kind: "Dataset"}, "datasets", true, v.controllerFactory)
+	return generic.NewController[*v1.Dataset, *v1.DatasetList](schema.GroupVersionKind{Group: "ml.oneblock.ai", Version: "v1", Kind: "Dataset"}, "datasets", true, v.controllerFactory)
+}
+
+func (v *version) Notebook() NotebookController {
+	return generic.NewController[*v1.Notebook, *v1.NotebookList](schema.GroupVersionKind{Group: "ml.oneblock.ai", Version: "v1", Kind: "Notebook"}, "notebooks", true, v.controllerFactory)
 }

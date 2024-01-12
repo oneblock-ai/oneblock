@@ -22,8 +22,8 @@ import (
 	"fmt"
 	"net/http"
 
-	corev1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/core.oneblock.ai/v1"
 	managementv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/management.oneblock.ai/v1"
+	mlv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/ml.oneblock.ai/v1"
 	nvidiav1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/nvidia.com/v1"
 	rayv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/ray.io/v1"
 	discovery "k8s.io/client-go/discovery"
@@ -33,8 +33,8 @@ import (
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
-	CoreV1() corev1.CoreV1Interface
 	ManagementV1() managementv1.ManagementV1Interface
+	MlV1() mlv1.MlV1Interface
 	NvidiaV1() nvidiav1.NvidiaV1Interface
 	RayV1() rayv1.RayV1Interface
 }
@@ -42,20 +42,20 @@ type Interface interface {
 // Clientset contains the clients for groups.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	coreV1       *corev1.CoreV1Client
 	managementV1 *managementv1.ManagementV1Client
+	mlV1         *mlv1.MlV1Client
 	nvidiaV1     *nvidiav1.NvidiaV1Client
 	rayV1        *rayv1.RayV1Client
-}
-
-// CoreV1 retrieves the CoreV1Client
-func (c *Clientset) CoreV1() corev1.CoreV1Interface {
-	return c.coreV1
 }
 
 // ManagementV1 retrieves the ManagementV1Client
 func (c *Clientset) ManagementV1() managementv1.ManagementV1Interface {
 	return c.managementV1
+}
+
+// MlV1 retrieves the MlV1Client
+func (c *Clientset) MlV1() mlv1.MlV1Interface {
+	return c.mlV1
 }
 
 // NvidiaV1 retrieves the NvidiaV1Client
@@ -112,11 +112,11 @@ func NewForConfigAndClient(c *rest.Config, httpClient *http.Client) (*Clientset,
 
 	var cs Clientset
 	var err error
-	cs.coreV1, err = corev1.NewForConfigAndClient(&configShallowCopy, httpClient)
+	cs.managementV1, err = managementv1.NewForConfigAndClient(&configShallowCopy, httpClient)
 	if err != nil {
 		return nil, err
 	}
-	cs.managementV1, err = managementv1.NewForConfigAndClient(&configShallowCopy, httpClient)
+	cs.mlV1, err = mlv1.NewForConfigAndClient(&configShallowCopy, httpClient)
 	if err != nil {
 		return nil, err
 	}
@@ -149,8 +149,8 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
-	cs.coreV1 = corev1.New(c)
 	cs.managementV1 = managementv1.New(c)
+	cs.mlV1 = mlv1.New(c)
 	cs.nvidiaV1 = nvidiav1.New(c)
 	cs.rayV1 = rayv1.New(c)
 

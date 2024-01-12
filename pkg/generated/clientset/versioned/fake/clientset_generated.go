@@ -20,10 +20,10 @@ package fake
 
 import (
 	clientset "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned"
-	corev1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/core.oneblock.ai/v1"
-	fakecorev1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/core.oneblock.ai/v1/fake"
 	managementv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/management.oneblock.ai/v1"
 	fakemanagementv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/management.oneblock.ai/v1/fake"
+	mlv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/ml.oneblock.ai/v1"
+	fakemlv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/ml.oneblock.ai/v1/fake"
 	nvidiav1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/nvidia.com/v1"
 	fakenvidiav1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/nvidia.com/v1/fake"
 	rayv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/ray.io/v1"
@@ -85,14 +85,14 @@ var (
 	_ testing.FakeClient  = &Clientset{}
 )
 
-// CoreV1 retrieves the CoreV1Client
-func (c *Clientset) CoreV1() corev1.CoreV1Interface {
-	return &fakecorev1.FakeCoreV1{Fake: &c.Fake}
-}
-
 // ManagementV1 retrieves the ManagementV1Client
 func (c *Clientset) ManagementV1() managementv1.ManagementV1Interface {
 	return &fakemanagementv1.FakeManagementV1{Fake: &c.Fake}
+}
+
+// MlV1 retrieves the MlV1Client
+func (c *Clientset) MlV1() mlv1.MlV1Interface {
+	return &fakemlv1.FakeMlV1{Fake: &c.Fake}
 }
 
 // NvidiaV1 retrieves the NvidiaV1Client

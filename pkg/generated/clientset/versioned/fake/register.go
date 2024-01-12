@@ -20,8 +20,8 @@ package fake
 
 import (
 	nvidiav1 "github.com/NVIDIA/gpu-operator/api/v1"
-	corev1 "github.com/oneblock-ai/oneblock/pkg/apis/core.oneblock.ai/v1"
 	managementv1 "github.com/oneblock-ai/oneblock/pkg/apis/management.oneblock.ai/v1"
+	mlv1 "github.com/oneblock-ai/oneblock/pkg/apis/ml.oneblock.ai/v1"
 	rayv1 "github.com/ray-project/kuberay/ray-operator/apis/ray/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
@@ -34,8 +34,8 @@ var scheme = runtime.NewScheme()
 var codecs = serializer.NewCodecFactory(scheme)
 
 var localSchemeBuilder = runtime.SchemeBuilder{
-	corev1.AddToScheme,
 	managementv1.AddToScheme,
+	mlv1.AddToScheme,
 	nvidiav1.AddToScheme,
 	rayv1.AddToScheme,
 }
