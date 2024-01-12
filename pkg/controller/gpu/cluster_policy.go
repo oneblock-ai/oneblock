@@ -43,7 +43,6 @@ func (h *handler) OnChanged(_ string, policy *nvidiav1.ClusterPolicy) (*nvidiav1
 	if policy == nil || policy.DeletionTimestamp != nil {
 		return policy, nil
 	}
-	fmt.Println("cluster policy changed", policy.Name)
 
 	_, err := h.configToolkitContainerd(policy)
 	if err != nil {

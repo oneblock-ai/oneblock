@@ -16,7 +16,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	oneblockaiv1 "github.com/oneblock-ai/oneblock/pkg/apis/core.oneblock.ai/v1"
+	oneblockaiv1 "github.com/oneblock-ai/oneblock/pkg/apis/ml.oneblock.ai/v1"
 	//+kubebuilder:scaffold:imports
 )
 

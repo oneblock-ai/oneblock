@@ -1,0 +1,44 @@
+apiVersion: ml.oneblock.ai/v1
+kind: Notebook
+metadata:
+  name: nb-jupyter
+  namespace: default
+  labels:
+    ml.oneblock.ai/notebook-type: juptyer
+spec:
+  serviceType: NodePort
+  template:
+    spec:
+      containers:
+      - image: kubeflownotebookswg/jupyter-scipy:v1.8.0
+        name: nb-jupyter
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+#          limits:
+#            nvidia.com/gpu: 1 # optional, requesting 1 GPU
+        volumeMounts:
+        - mountPath: /home/jovyan
+          name: test-vol
+        - mountPath: /dev/shm
+          name: dshm
+      volumes:
+      - name: test-vol
+        persistentVolumeClaim:
+          claimName: nb-jupyter
+      - emptyDir:
+          medium: Memory
+        name: dshm
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nb-jupyter
+  namespace: default
+spec:
+  resources:
+    requests:
+      storage: 1Gi
+  accessModes:
+  - ReadWriteOnce
