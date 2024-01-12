@@ -22,7 +22,7 @@ import (
 	"context"
 	"time"
 
-	v1 "github.com/oneblock-ai/oneblock/pkg/apis/core.oneblock.ai/v1"
+	v1 "github.com/oneblock-ai/oneblock/pkg/apis/ml.oneblock.ai/v1"
 	scheme "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/scheme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
@@ -57,7 +57,7 @@ type datasets struct {
 }
 
 // newDatasets returns a Datasets
-func newDatasets(c *CoreV1Client, namespace string) *datasets {
+func newDatasets(c *MlV1Client, namespace string) *datasets {
 	return &datasets{
 		client: c.RESTClient(),
 		ns:     namespace,

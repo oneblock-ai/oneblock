@@ -22,7 +22,7 @@ import (
 	"context"
 	"time"
 
-	v1 "github.com/oneblock-ai/oneblock/pkg/apis/core.oneblock.ai/v1"
+	v1 "github.com/oneblock-ai/oneblock/pkg/apis/ml.oneblock.ai/v1"
 	"github.com/rancher/wrangler/v2/pkg/apply"
 	"github.com/rancher/wrangler/v2/pkg/condition"
 	"github.com/rancher/wrangler/v2/pkg/generic"

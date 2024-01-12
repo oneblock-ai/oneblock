@@ -21,7 +21,7 @@ package fake
 import (
 	"context"
 
-	v1 "github.com/oneblock-ai/oneblock/pkg/apis/core.oneblock.ai/v1"
+	v1 "github.com/oneblock-ai/oneblock/pkg/apis/ml.oneblock.ai/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	types "k8s.io/apimachinery/pkg/types"
@@ -31,7 +31,7 @@ import (
 
 // FakeDatasets implements DatasetInterface
 type FakeDatasets struct {
-	Fake *FakeCoreV1
+	Fake *FakeMlV1
 	ns   string
 }
 
