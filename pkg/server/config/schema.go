@@ -6,7 +6,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 
-	oneblockaiv1 "github.com/oneblock-ai/oneblock/pkg/apis/core.oneblock.ai/v1"
+	oneblockaiv1 "github.com/oneblock-ai/oneblock/pkg/apis/ml.oneblock.ai/v1"
 )
 
 var (

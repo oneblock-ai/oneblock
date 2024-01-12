@@ -37,7 +37,7 @@ To deploy the 1Block.AI on your k8s cluster, you can use the following commands:
 **Install the CRDs into the cluster:**
 
 ```sh
-$ make install
+$ make install-crds
 ```
 or
 ```sh
@@ -47,7 +47,7 @@ $ helm upgrade --install --create-namepsace -n oneblock-system oneblock-crd ./de
 **Deploy the api-server to the cluster:**
 
 ```sh
-$ make deploy
+$ make install-ob
 ```
 or
 ```sh
@@ -63,7 +63,7 @@ $ helm uninstall -n oneblock-system oneblock
 ```
 or
 ```sh
-$ make uninstall && make undeploy
+$ make uninstall-crds && make uninstall-ob
 ```
 
 ## Contributing
@@ -77,7 +77,7 @@ If you have any feedback or issues, feel free to file a GitHub [issue](https://g
 
 ## License
 
-Copyright (c) 2023 [1Block.AI.](https://1block.ai/)
+Copyright (c) 2024 [1Block.AI.](https://1block.ai/)
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

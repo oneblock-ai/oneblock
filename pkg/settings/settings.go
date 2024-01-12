@@ -27,11 +27,13 @@ var (
 	UIPl                   = NewSetting(UIPlSettingName, "oneblock")
 	UISource               = NewSetting(UISourceSettingName, "auto") // Options are 'auto', 'external' or 'bundled'
 	RayVersion             = NewSetting("ray-version", "2.9.0")      // Default ray install version
+	NotebookDefaultImages  = NewSetting(DefaultNotebookImagesSettingName, setDefaultNotebookImages())
 )
 
 const (
-	UIPlSettingName     = "ui-pl"
-	UISourceSettingName = "ui-source"
+	UIPlSettingName                  = "ui-pl"
+	UISourceSettingName              = "ui-source"
+	DefaultNotebookImagesSettingName = "default-notebook-images"
 )
 
 func init() {

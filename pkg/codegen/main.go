@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	oneblockCoreGV = "core.oneblock.ai"
+	oneblockCoreGV = "ml.oneblock.ai"
 	oneblockMgmtGV = "management.oneblock.ai"
 	kubeRayGV      = "ray.io"
 	nvidiaGV       = "nvidia.com"
@@ -26,7 +26,7 @@ func main() {
 				PackageName: oneblockCoreGV,
 				Types: []interface{}{
 					// All structs with an embedded ObjectMeta field will be picked up
-					"./pkg/apis/core.oneblock.ai/v1",
+					"./pkg/apis/ml.oneblock.ai/v1",
 				},
 				GenerateTypes:   true,
 				GenerateClients: true,

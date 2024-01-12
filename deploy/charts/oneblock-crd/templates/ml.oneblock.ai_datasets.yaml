@@ -4,9 +4,9 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     {}
-  name: datasets.core.oneblock.ai
+  name: datasets.ml.oneblock.ai
 spec:
-  group: core.oneblock.ai
+  group: ml.oneblock.ai
   names:
     kind: Dataset
     listKind: DatasetList

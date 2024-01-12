@@ -1,0 +1,370 @@
+package notebook
+
+import (
+	"context"
+	"fmt"
+	"os"
+	"reflect"
+	"strings"
+
+	ctlappsv1 "github.com/rancher/wrangler/v2/pkg/generated/controllers/apps/v1"
+	ctlv1 "github.com/rancher/wrangler/v2/pkg/generated/controllers/core/v1"
+	"github.com/rancher/wrangler/v2/pkg/relatedresource"
+	"github.com/sirupsen/logrus"
+	v1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	ctrl "sigs.k8s.io/controller-runtime"
+
+	mgmtv1 "github.com/oneblock-ai/oneblock/pkg/apis/management.oneblock.ai/v1"
+	mlv1 "github.com/oneblock-ai/oneblock/pkg/apis/ml.oneblock.ai/v1"
+	ctlmlv1 "github.com/oneblock-ai/oneblock/pkg/generated/controllers/ml.oneblock.ai/v1"
+	"github.com/oneblock-ai/oneblock/pkg/server/config"
+	"github.com/oneblock-ai/oneblock/pkg/utils/constant"
+)
+
+// Note: this is referred to the kubeflow notebook controller
+// https://github.com/kubeflow/kubeflow/tree/master/components/notebook-controller
+
+const (
+	DefaultContainerPort = int32(8888)
+	DefaultServingPort   = 80
+	PrefixEnvVar         = "NB_PREFIX"
+
+	// DefaultFSGroup The default fsGroup of PodSecurityContext.
+	// https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#podsecuritycontext-v1-core
+	DefaultFSGroup = int64(100)
+)
+
+type handler struct {
+	ctx              context.Context
+	scheme           *runtime.Scheme
+	notebooks        ctlmlv1.NotebookClient
+	statefulsets     ctlappsv1.StatefulSetClient
+	statefulsetCache ctlappsv1.StatefulSetCache
+	services         ctlv1.ServiceClient
+	serviceCache     ctlv1.ServiceCache
+	podCache         ctlv1.PodCache
+}
+
+func Register(ctx context.Context, mgmt *config.Management) error {
+	notebooks := mgmt.OneBlockMLFactory.Ml().V1().Notebook()
+	statefulsets := mgmt.AppsFactory.Apps().V1().StatefulSet()
+	services := mgmt.CoreFactory.Core().V1().Service()
+	pods := mgmt.CoreFactory.Core().V1().Pod()
+	h := handler{
+		ctx:              ctx,
+		scheme:           mgmt.Scheme,
+		notebooks:        notebooks,
+		statefulsets:     statefulsets,
+		statefulsetCache: statefulsets.Cache(),
+		services:         services,
+		serviceCache:     services.Cache(),
+		podCache:         pods.Cache(),
+	}
+
+	notebooks.OnChange(ctx, "ob-notebooks", h.OnChanged)
+	relatedresource.Watch(ctx, "watch-notebook-pod", h.ReconcileNotebookPodOwners, notebooks, pods)
+	return nil
+}
+
+func (h *handler) OnChanged(_ string, notebook *mlv1.Notebook) (*mlv1.Notebook, error) {
+	if notebook == nil || notebook.DeletionTimestamp != nil {
+		return nil, nil
+	}
+
+	// create notebook statefulset if not exist
+	ss, err := h.ensureStatefulset(notebook)
+	if err != nil {
+		return notebook, err
+	}
+
+	// create notebook service if not exist
+	if err := h.generateService(notebook); err != nil {
+		return notebook, err
+	}
+
+	// update notebook status
+	err = h.updateNotebookStatus(notebook, ss)
+	if err != nil {
+		return notebook, err
+	}
+
+	return nil, nil
+}
+
+func (h *handler) ensureStatefulset(notebook *mlv1.Notebook) (*v1.StatefulSet, error) {
+	logrus.Debugf("ensure statefulset for notebook %s/%s", notebook.Namespace, notebook.Name)
+	ss, err := h.statefulsetCache.Get(notebook.Namespace, notebook.Name)
+	if err != nil && !errors.IsNotFound(err) {
+		return nil, err
+	}
+
+	if ss == nil {
+		logrus.Infof("generating statefulset for notebook %s/%s", notebook.Namespace, notebook.Name)
+		ss = getNoteBookStatefulset(notebook)
+
+		if err := ctrl.SetControllerReference(notebook, ss, h.scheme); err != nil {
+			return nil, err
+		}
+
+		if ss, err := h.statefulsets.Create(ss); err != nil {
+			return ss, err
+		}
+	}
+
+	if !reflect.DeepEqual(notebook.Spec.Template.Spec, ss.Spec.Template.Spec) {
+		logrus.Infof("updating notebook statefulset %s/%s", notebook.Namespace, notebook.Name)
+		ssCopy := ss.DeepCopy()
+		ssCopy.Spec.Template.Spec = notebook.Spec.Template.Spec
+		if ss, err := h.statefulsets.Update(ssCopy); err != nil {
+			return ss, err
+		}
+	}
+
+	return ss, nil
+}
+
+func getNoteBookStatefulset(notebook *mlv1.Notebook) *v1.StatefulSet {
+	replicas := int32(1)
+	if metav1.HasAnnotation(notebook.ObjectMeta, constant.ResourceStoppedAnnotation) {
+		replicas = 0
+	}
+
+	ss := &v1.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      notebook.Name,
+			Namespace: notebook.Namespace,
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion: notebook.APIVersion,
+					Kind:       notebook.Kind,
+					Name:       notebook.Name,
+					UID:        notebook.UID,
+				},
+			},
+		},
+		Spec: v1.StatefulSetSpec{
+			Replicas: &replicas,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: getNotebookPodLabel(notebook),
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels:      getNotebookPodLabel(notebook),
+					Annotations: map[string]string{},
+				},
+				Spec: *notebook.Spec.Template.Spec.DeepCopy(),
+			},
+		},
+	}
+
+	// copy all the notebook labels to the pod including pod default related labels
+	l := &ss.Spec.Template.ObjectMeta.Labels
+	for k, v := range notebook.ObjectMeta.Labels {
+		(*l)[k] = v
+	}
+
+	// copy all the notebook annotations to the pod.
+	a := &ss.Spec.Template.ObjectMeta.Annotations
+	for k, v := range notebook.ObjectMeta.Annotations {
+		if !strings.Contains(k, "kubectl") && !strings.Contains(k, "notebook") {
+			(*a)[k] = v
+		}
+	}
+
+	podSpec := &ss.Spec.Template.Spec
+	container := &podSpec.Containers[0]
+	if container.WorkingDir == "" {
+		container.WorkingDir = "/home/jovyan"
+	}
+	if container.Ports == nil {
+		container.Ports = []corev1.ContainerPort{
+			{
+				ContainerPort: DefaultContainerPort,
+				Name:          "notebook-port",
+				Protocol:      "TCP",
+			},
+		}
+	}
+
+	setPrefixEnvVar(notebook, container)
+
+	// For some platforms (like OpenShift), adding fsGroup: 100 is troublesome.
+	// This allows for those platforms to bypass the automatic addition of the fsGroup
+	// and will allow for the Pod Security Policy controller to make an appropriate choice
+	// https://github.com/kubernetes-sigs/controller-runtime/issues/4617
+	if value, exists := os.LookupEnv("ADD_FSGROUP"); !exists || value == "true" {
+		if podSpec.SecurityContext == nil {
+			fsGroup := DefaultFSGroup
+			podSpec.SecurityContext = &corev1.PodSecurityContext{
+				FSGroup: &fsGroup,
+			}
+		}
+	}
+	return ss
+}
+
+func setPrefixEnvVar(notebook *mlv1.Notebook, container *corev1.Container) {
+	prefix := "/notebook/" + notebook.Namespace + "/" + notebook.Name
+
+	for _, envVar := range container.Env {
+		if envVar.Name == PrefixEnvVar {
+			envVar.Value = prefix
+			return
+		}
+	}
+
+	container.Env = append(container.Env, corev1.EnvVar{
+		Name:  PrefixEnvVar,
+		Value: prefix,
+	})
+}
+
+func (h *handler) generateService(notebook *mlv1.Notebook) error {
+	svcName := fmt.Sprintf("%s-notebook", notebook.Name)
+	svc, err := h.serviceCache.Get(notebook.Namespace, svcName)
+	if err != nil && !errors.IsNotFound(err) {
+		return err
+	}
+
+	if svc == nil {
+		logrus.Infof("creating new service %s/%s", notebook.Namespace, svcName)
+		svc = getService(notebook, svcName)
+
+		if err = ctrl.SetControllerReference(notebook, svc, h.scheme); err != nil {
+			return err
+		}
+
+		if _, err = h.services.Create(svc); err != nil {
+			return err
+		}
+	}
+
+	if svc.Spec.Type != notebook.Spec.ServiceType {
+		svcCpy := svc.DeepCopy()
+		svcCpy.Spec.Type = notebook.Spec.ServiceType
+		if _, err = h.services.Update(svcCpy); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func getService(notebook *mlv1.Notebook, svcName string) *corev1.Service {
+	svcType := corev1.ServiceTypeClusterIP
+	if notebook.Spec.ServiceType != "" {
+		svcType = notebook.Spec.ServiceType
+	}
+	// Define the desired Service object
+	port := DefaultContainerPort
+	containerPorts := notebook.Spec.Template.Spec.Containers[0].Ports
+	if containerPorts != nil {
+		port = containerPorts[0].ContainerPort
+	}
+	svc := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      svcName,
+			Namespace: notebook.Namespace,
+		},
+		Spec: corev1.ServiceSpec{
+			Type:     svcType,
+			Selector: getNotebookPodLabel(notebook),
+			Ports: []corev1.ServicePort{
+				{
+					Name:       "http-" + notebook.Name,
+					Port:       DefaultServingPort,
+					TargetPort: intstr.FromInt32(port),
+					Protocol:   "TCP",
+				},
+			},
+		},
+	}
+	return svc
+}
+
+func getNotebookPodLabel(notebook *mlv1.Notebook) map[string]string {
+	return map[string]string{
+		"statefulset":   notebook.Name,
+		"notebook-name": notebook.Name,
+	}
+}
+
+func (h *handler) updateNotebookStatus(notebook *mlv1.Notebook, ss *v1.StatefulSet) error {
+	toUpdateStatus := false
+	pod, err := h.podCache.Get(ss.Namespace, fmt.Sprintf("%s-0", ss.Name))
+	if err != nil {
+		return err
+	}
+
+	if reflect.DeepEqual(pod.Status, corev1.PodStatus{}) {
+		logrus.Info("empty pod status, won't update notebook status")
+		return nil
+	}
+
+	nbCopy := notebook.DeepCopy()
+	if ss.Status.ReadyReplicas != nbCopy.Status.ReadyReplicas {
+		toUpdateStatus = true
+	}
+	status := mlv1.NotebookStatus{
+		Conditions:    make([]mgmtv1.Condition, 0),
+		ReadyReplicas: ss.Status.ReadyReplicas,
+		State:         corev1.ContainerState{},
+	}
+
+	// Update status of the CR using the ContainerState of
+	// the container that has the same name as the CR.
+	// If no container of same name is found, the state of the CR is not updated.
+	notebookContainerFound := false
+	logrus.Info("Calculating Notebook's  containerState")
+	for i := range pod.Status.ContainerStatuses {
+		if !strings.Contains(pod.Status.ContainerStatuses[i].Name, notebook.Name) {
+			continue
+		}
+
+		if pod.Status.ContainerStatuses[i].State == nbCopy.Status.State {
+			continue
+		}
+
+		// Update Notebook CR's status.ContainerState
+		cs := pod.Status.ContainerStatuses[i].State
+		logrus.Infof("updating notebook cr state: %s", cs)
+
+		status.State = cs
+		notebookContainerFound = true
+		break
+	}
+
+	if !notebookContainerFound {
+		logrus.Warnln("Could not find notebook container, Will not update notebook's status.state")
+	}
+
+	// Mirroring pod condition
+	notebookConditions := make([]mgmtv1.Condition, 0)
+	logrus.Info("Calculating Notebook's Conditions")
+	for i := range pod.Status.Conditions {
+		condition := PodCondToNotebookCond(pod.Status.Conditions[i])
+		notebookConditions = append(notebookConditions, condition)
+	}
+	// update status
+	status.Conditions = notebookConditions
+
+	if !reflect.DeepEqual(status.Conditions, notebookConditions) {
+		toUpdateStatus = true
+	}
+
+	if !reflect.DeepEqual(status.State, nbCopy.Status.State) {
+		toUpdateStatus = true
+	}
+
+	if toUpdateStatus {
+		nbCopy.Status = status
+		_, err = h.notebooks.UpdateStatus(nbCopy)
+	}
+
+	return err
+}

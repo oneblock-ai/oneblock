@@ -1,7 +1,8 @@
 package constant
 
 const (
-	DefaultSystemNamespace = "oneblock-system"
+	DefaultSystemNamespace    = "oneblock-system"
+	ResourceStoppedAnnotation = "core.oneblock.ai/resource-stopped"
 
 	RedisSecretKeyName = "redis-password" // #nosec G101
 	RedisSecretName    = "kuberay-redis"  // #nosec G101

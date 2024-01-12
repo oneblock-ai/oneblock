@@ -6,16 +6,18 @@ import (
 	dashboardapi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
 	"github.com/rancher/lasso/pkg/controller"
 	"github.com/rancher/wrangler/v2/pkg/apply"
+	appsv1 "github.com/rancher/wrangler/v2/pkg/generated/controllers/apps"
 	corev1 "github.com/rancher/wrangler/v2/pkg/generated/controllers/core"
 	rbacv1 "github.com/rancher/wrangler/v2/pkg/generated/controllers/rbac"
 	"github.com/rancher/wrangler/v2/pkg/generic"
 	"github.com/rancher/wrangler/v2/pkg/start"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
 	"github.com/oneblock-ai/oneblock/pkg/auth"
-	obcorev1 "github.com/oneblock-ai/oneblock/pkg/generated/controllers/core.oneblock.ai"
 	obmgmtv1 "github.com/oneblock-ai/oneblock/pkg/generated/controllers/management.oneblock.ai"
+	obmlv1 "github.com/oneblock-ai/oneblock/pkg/generated/controllers/ml.oneblock.ai"
 	nvidiav1 "github.com/oneblock-ai/oneblock/pkg/generated/controllers/nvidia.com"
 	kuberayv1 "github.com/oneblock-ai/oneblock/pkg/generated/controllers/ray.io"
 )
@@ -26,10 +28,12 @@ type Management struct {
 	ClientSet  *kubernetes.Clientset
 	RestConfig *rest.Config
 	Apply      apply.Apply
+	Scheme     *runtime.Scheme
 
-	OneBlockCoreFactory *obcorev1.Factory
+	OneBlockMLFactory   *obmlv1.Factory
 	OneBlockMgmtFactory *obmgmtv1.Factory
 	CoreFactory         *corev1.Factory
+	AppsFactory         *appsv1.Factory
 	RbacFactory         *rbacv1.Factory
 	KubeRayFactory      *kuberayv1.Factory
 	NvidiaFactory       *nvidiav1.Factory
@@ -42,6 +46,7 @@ func SetupManagement(ctx context.Context, restConfig *rest.Config, namespace str
 	mgmt := &Management{
 		ctx:       ctx,
 		Namespace: namespace,
+		Scheme:    Scheme,
 	}
 
 	apply, err := apply.NewForConfig(restConfig)
@@ -66,12 +71,19 @@ func SetupManagement(ctx context.Context, restConfig *rest.Config, namespace str
 		SharedControllerFactory: factory,
 	}
 
-	oneblockCore, err := obcorev1.NewFactoryFromConfigWithOptions(restConfig, factoryOpts)
+	oneblockML, err := obmlv1.NewFactoryFromConfigWithOptions(restConfig, factoryOpts)
 	if err != nil {
 		return nil, err
 	}
-	mgmt.OneBlockCoreFactory = oneblockCore
-	mgmt.starters = append(mgmt.starters, oneblockCore)
+	mgmt.OneBlockMLFactory = oneblockML
+	mgmt.starters = append(mgmt.starters, oneblockML)
+
+	apps, err := appsv1.NewFactoryFromConfigWithOptions(restConfig, factoryOpts)
+	if err != nil {
+		return nil, err
+	}
+	mgmt.AppsFactory = apps
+	mgmt.starters = append(mgmt.starters, apps)
 
 	oneblockMgmt, err := obmgmtv1.NewFactoryFromConfigWithOptions(restConfig, factoryOpts)
 	if err != nil {
