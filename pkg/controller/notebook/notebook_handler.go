@@ -39,12 +39,11 @@ const (
 	DefaultFSGroup = int64(100)
 )
 
-type handler struct {
-	ctx              context.Context
+type Handler struct {
 	scheme           *runtime.Scheme
 	notebooks        ctlmlv1.NotebookClient
-	statefulsets     ctlappsv1.StatefulSetClient
-	statefulsetCache ctlappsv1.StatefulSetCache
+	statefulSets     ctlappsv1.StatefulSetClient
+	statefulSetCache ctlappsv1.StatefulSetCache
 	services         ctlv1.ServiceClient
 	serviceCache     ctlv1.ServiceCache
 	podCache         ctlv1.PodCache
@@ -55,12 +54,11 @@ func Register(ctx context.Context, mgmt *config.Management) error {
 	statefulsets := mgmt.AppsFactory.Apps().V1().StatefulSet()
 	services := mgmt.CoreFactory.Core().V1().Service()
 	pods := mgmt.CoreFactory.Core().V1().Pod()
-	h := handler{
-		ctx:              ctx,
+	h := Handler{
 		scheme:           mgmt.Scheme,
 		notebooks:        notebooks,
-		statefulsets:     statefulsets,
-		statefulsetCache: statefulsets.Cache(),
+		statefulSets:     statefulsets,
+		statefulSetCache: statefulsets.Cache(),
 		services:         services,
 		serviceCache:     services.Cache(),
 		podCache:         pods.Cache(),
@@ -71,13 +69,13 @@ func Register(ctx context.Context, mgmt *config.Management) error {
 	return nil
 }
 
-func (h *handler) OnChanged(_ string, notebook *mlv1.Notebook) (*mlv1.Notebook, error) {
+func (h *Handler) OnChanged(_ string, notebook *mlv1.Notebook) (*mlv1.Notebook, error) {
 	if notebook == nil || notebook.DeletionTimestamp != nil {
 		return nil, nil
 	}
 
 	// create notebook statefulset if not exist
-	ss, err := h.ensureStatefulset(notebook)
+	ss, err := h.ensureStatefulSet(notebook)
 	if err != nil {
 		return notebook, err
 	}
@@ -93,34 +91,34 @@ func (h *handler) OnChanged(_ string, notebook *mlv1.Notebook) (*mlv1.Notebook, 
 		return notebook, err
 	}
 
-	return nil, nil
+	return notebook, nil
 }
 
-func (h *handler) ensureStatefulset(notebook *mlv1.Notebook) (*v1.StatefulSet, error) {
-	logrus.Debugf("ensure statefulset for notebook %s/%s", notebook.Namespace, notebook.Name)
-	ss, err := h.statefulsetCache.Get(notebook.Namespace, notebook.Name)
+func (h *Handler) ensureStatefulSet(notebook *mlv1.Notebook) (*v1.StatefulSet, error) {
+	logrus.Debugf("Ensure statefulset for notebook %s/%s", notebook.Namespace, notebook.Name)
+	ss, err := h.statefulSetCache.Get(notebook.Namespace, notebook.Name)
 	if err != nil && !errors.IsNotFound(err) {
 		return nil, err
 	}
 
 	if ss == nil {
-		logrus.Infof("generating statefulset for notebook %s/%s", notebook.Namespace, notebook.Name)
-		ss = getNoteBookStatefulset(notebook)
+		logrus.Infof("Generating statefulset for notebook %s/%s", notebook.Namespace, notebook.Name)
+		ss = getNoteBookStatefulSet(notebook)
 
 		if err := ctrl.SetControllerReference(notebook, ss, h.scheme); err != nil {
 			return nil, err
 		}
 
-		if ss, err := h.statefulsets.Create(ss); err != nil {
+		if ss, err := h.statefulSets.Create(ss); err != nil {
 			return ss, err
 		}
 	}
 
 	if !reflect.DeepEqual(notebook.Spec.Template.Spec, ss.Spec.Template.Spec) {
-		logrus.Infof("updating notebook statefulset %s/%s", notebook.Namespace, notebook.Name)
+		logrus.Infof("Updating notebook statefulset %s/%s", notebook.Namespace, notebook.Name)
 		ssCopy := ss.DeepCopy()
 		ssCopy.Spec.Template.Spec = notebook.Spec.Template.Spec
-		if ss, err := h.statefulsets.Update(ssCopy); err != nil {
+		if ss, err := h.statefulSets.Update(ssCopy); err != nil {
 			return ss, err
 		}
 	}
@@ -128,7 +126,7 @@ func (h *handler) ensureStatefulset(notebook *mlv1.Notebook) (*v1.StatefulSet, e
 	return ss, nil
 }
 
-func getNoteBookStatefulset(notebook *mlv1.Notebook) *v1.StatefulSet {
+func getNoteBookStatefulSet(notebook *mlv1.Notebook) *v1.StatefulSet {
 	replicas := int32(1)
 	if metav1.HasAnnotation(notebook.ObjectMeta, constant.ResourceStoppedAnnotation) {
 		replicas = 0
@@ -224,7 +222,7 @@ func setPrefixEnvVar(notebook *mlv1.Notebook, container *corev1.Container) {
 	})
 }
 
-func (h *handler) generateService(notebook *mlv1.Notebook) error {
+func (h *Handler) generateService(notebook *mlv1.Notebook) error {
 	svcName := fmt.Sprintf("%s-notebook", notebook.Name)
 	svc, err := h.serviceCache.Get(notebook.Namespace, svcName)
 	if err != nil && !errors.IsNotFound(err) {
@@ -232,7 +230,7 @@ func (h *handler) generateService(notebook *mlv1.Notebook) error {
 	}
 
 	if svc == nil {
-		logrus.Infof("creating new service %s/%s", notebook.Namespace, svcName)
+		logrus.Infof("Creating new service %s/%s", notebook.Namespace, svcName)
 		svc = getService(notebook, svcName)
 
 		if err = ctrl.SetControllerReference(notebook, svc, h.scheme); err != nil {
@@ -289,20 +287,24 @@ func getService(notebook *mlv1.Notebook, svcName string) *corev1.Service {
 
 func getNotebookPodLabel(notebook *mlv1.Notebook) map[string]string {
 	return map[string]string{
-		"statefulset":   notebook.Name,
-		"notebook-name": notebook.Name,
+		"statefulset":     notebook.Name,
+		notebookNameLabel: notebook.Name,
 	}
 }
 
-func (h *handler) updateNotebookStatus(notebook *mlv1.Notebook, ss *v1.StatefulSet) error {
+func (h *Handler) updateNotebookStatus(notebook *mlv1.Notebook, ss *v1.StatefulSet) error {
 	toUpdateStatus := false
 	pod, err := h.podCache.Get(ss.Namespace, fmt.Sprintf("%s-0", ss.Name))
 	if err != nil {
+		if errors.IsNotFound(err) {
+			logrus.Infof("Notebook pod not found: %s, skipp updating and waiting for reconcile", err)
+			return nil
+		}
 		return err
 	}
 
 	if reflect.DeepEqual(pod.Status, corev1.PodStatus{}) {
-		logrus.Info("empty pod status, won't update notebook status")
+		logrus.Infoln("Empty pod status, won't update notebook status")
 		return nil
 	}
 
@@ -319,8 +321,8 @@ func (h *handler) updateNotebookStatus(notebook *mlv1.Notebook, ss *v1.StatefulS
 	// Update status of the CR using the ContainerState of
 	// the container that has the same name as the CR.
 	// If no container of same name is found, the state of the CR is not updated.
+	logrus.Debugln("Calculating Notebook's  containerState")
 	notebookContainerFound := false
-	logrus.Info("Calculating Notebook's  containerState")
 	for i := range pod.Status.ContainerStatuses {
 		if !strings.Contains(pod.Status.ContainerStatuses[i].Name, notebook.Name) {
 			continue
@@ -332,7 +334,7 @@ func (h *handler) updateNotebookStatus(notebook *mlv1.Notebook, ss *v1.StatefulS
 
 		// Update Notebook CR's status.ContainerState
 		cs := pod.Status.ContainerStatuses[i].State
-		logrus.Infof("updating notebook cr state: %s", cs)
+		logrus.Debugf("Updating notebook cr state: %s", cs)
 
 		status.State = cs
 		notebookContainerFound = true
@@ -345,7 +347,6 @@ func (h *handler) updateNotebookStatus(notebook *mlv1.Notebook, ss *v1.StatefulS
 
 	// Mirroring pod condition
 	notebookConditions := make([]mgmtv1.Condition, 0)
-	logrus.Info("Calculating Notebook's Conditions")
 	for i := range pod.Status.Conditions {
 		condition := PodCondToNotebookCond(pod.Status.Conditions[i])
 		notebookConditions = append(notebookConditions, condition)

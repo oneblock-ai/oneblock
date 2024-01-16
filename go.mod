@@ -27,6 +27,7 @@ require (
 	github.com/ray-project/kuberay/ray-operator v1.0.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.0
+	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.15.0
 	gopkg.in/square/go-jose.v2 v2.6.0
 	k8s.io/api v0.28.4

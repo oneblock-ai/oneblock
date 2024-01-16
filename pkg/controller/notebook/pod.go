@@ -16,7 +16,7 @@ import (
 const notebookNameLabel = "notebook-name"
 
 // ReconcileNotebookPodOwners reconciles the owner notebook by pod
-func (h *handler) ReconcileNotebookPodOwners(_, _ string, obj runtime.Object) ([]relatedresource.Key, error) {
+func (h *Handler) ReconcileNotebookPodOwners(_, _ string, obj runtime.Object) ([]relatedresource.Key, error) {
 	if hc, ok := obj.(*corev1.Pod); ok {
 		for k, v := range hc.GetLabels() {
 			if strings.ToLower(k) == notebookNameLabel {

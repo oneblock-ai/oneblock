@@ -14,8 +14,8 @@ spec:
         name: nb-code-server
         resources:
           requests:
-            cpu: 500m
-            memory: 1Gi
+            cpu: 200m
+            memory: 500Mi
         volumeMounts:
         - mountPath: /home/jovyan
           name: test-vol
