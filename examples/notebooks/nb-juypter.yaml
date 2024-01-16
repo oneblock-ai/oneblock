@@ -14,8 +14,8 @@ spec:
         name: nb-jupyter
         resources:
           requests:
-            cpu: 500m
-            memory: 1Gi
+            cpu: 200m
+            memory: 500Mi
 #          limits:
 #            nvidia.com/gpu: 1 # optional, requesting 1 GPU
         volumeMounts:
