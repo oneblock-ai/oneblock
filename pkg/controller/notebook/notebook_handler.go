@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	ctlappsv1 "github.com/rancher/wrangler/v2/pkg/generated/controllers/apps/v1"
-	ctlv1 "github.com/rancher/wrangler/v2/pkg/generated/controllers/core/v1"
+	ctlcorev1 "github.com/rancher/wrangler/v2/pkg/generated/controllers/core/v1"
 	"github.com/rancher/wrangler/v2/pkg/relatedresource"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/apps/v1"
@@ -44,16 +44,25 @@ type Handler struct {
 	notebooks        ctlmlv1.NotebookClient
 	statefulSets     ctlappsv1.StatefulSetClient
 	statefulSetCache ctlappsv1.StatefulSetCache
-	services         ctlv1.ServiceClient
-	serviceCache     ctlv1.ServiceCache
-	podCache         ctlv1.PodCache
+	services         ctlcorev1.ServiceClient
+	serviceCache     ctlcorev1.ServiceCache
+	podCache         ctlcorev1.PodCache
+	pvcs             ctlcorev1.PersistentVolumeClaimClient
+	pvcCache         ctlcorev1.PersistentVolumeClaimCache
 }
+
+const (
+	notebookControllerOnChange  = "notebook.onChange"
+	notebookControllerCreatePVC = "notebook.createPVCFromAnnotation"
+	notebookControllerWatchPods = "notebook.watchPods"
+)
 
 func Register(ctx context.Context, mgmt *config.Management) error {
 	notebooks := mgmt.OneBlockMLFactory.Ml().V1().Notebook()
 	statefulsets := mgmt.AppsFactory.Apps().V1().StatefulSet()
 	services := mgmt.CoreFactory.Core().V1().Service()
 	pods := mgmt.CoreFactory.Core().V1().Pod()
+	pvcs := mgmt.CoreFactory.Core().V1().PersistentVolumeClaim()
 	h := Handler{
 		scheme:           mgmt.Scheme,
 		notebooks:        notebooks,
@@ -62,10 +71,13 @@ func Register(ctx context.Context, mgmt *config.Management) error {
 		services:         services,
 		serviceCache:     services.Cache(),
 		podCache:         pods.Cache(),
+		pvcs:             pvcs,
+		pvcCache:         pvcs.Cache(),
 	}
 
-	notebooks.OnChange(ctx, "ob-notebooks", h.OnChanged)
-	relatedresource.Watch(ctx, "watch-notebook-pod", h.ReconcileNotebookPodOwners, notebooks, pods)
+	notebooks.OnChange(ctx, notebookControllerOnChange, h.OnChanged)
+	notebooks.OnChange(ctx, notebookControllerCreatePVC, h.createPVCFromAnnotation)
+	relatedresource.Watch(ctx, notebookControllerWatchPods, h.ReconcileNotebookPodOwners, notebooks, pods)
 	return nil
 }
 

@@ -5,8 +5,9 @@ metadata:
   namespace: default
   labels:
     ml.oneblock.ai/notebook-type: code-server
+  annotations:
+    oneblock.ai/volumeClaimTemplates: '[{"apiVersion":"v1","kind":"PersistentVolumeClaim","metadata":{"name":"nb-code-server"},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}}}]'
 spec:
-  serviceType: NodePort
   template:
     spec:
       containers:
@@ -24,19 +25,7 @@ spec:
       volumes:
       - name: test-vol
         persistentVolumeClaim:
-          claimName: nb-code-server
+          claimName: nb-code-server # keep the name to be consistent with the annotation volumeClaimTemplates
       - emptyDir:
           medium: Memory
         name: dshm
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: nb-code-server
-  namespace: default
-spec:
-  resources:
-    requests:
-      storage: 1Gi
-  accessModes:
-  - ReadWriteOnce

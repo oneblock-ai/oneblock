@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	kubeRayControllerSyncCluster = "OneblockRayCluster.syncCluster"
-	kubeRayControllerCreatePVC   = "OneblockRayCluster.createPVC"
+	kubeRayControllerSyncCluster = "rayCluster.syncCluster"
+	kubeRayControllerCreatePVC   = "rayCluster.createPVCFromAnnotation"
 )
 
 // handler reconcile the user's clusterRole and clusterRoleBinding
