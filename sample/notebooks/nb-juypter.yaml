@@ -5,6 +5,8 @@ metadata:
   namespace: default
   labels:
     ml.oneblock.ai/notebook-type: juptyer
+  annotations:
+    oneblock.ai/volumeClaimTemplates: '[{"apiVersion":"v1","kind":"PersistentVolumeClaim","metadata":{"name":"nb-jupyter"},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}}}]'
 spec:
   serviceType: NodePort
   template:
@@ -26,19 +28,7 @@ spec:
       volumes:
       - name: test-vol
         persistentVolumeClaim:
-          claimName: nb-jupyter
+          claimName: nb-jupyter # keep the name to be consistent with the annotation volumeClaimTemplates
       - emptyDir:
           medium: Memory
         name: dshm
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: nb-jupyter
-  namespace: default
-spec:
-  resources:
-    requests:
-      storage: 1Gi
-  accessModes:
-  - ReadWriteOnce

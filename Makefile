@@ -117,8 +117,8 @@ install-crds: manifests ## Install CRDs into the K8s cluster.
 	$(HELM) upgrade --install --create-namespace -n oneblock-system oneblock-crd deploy/charts/oneblock-crd --reuse-values
 
 .PHONY: uninstall-crd
-uninstall-crd: manifests ## Uninstall CRDs from the K8s cluster.
-	$(HELM) uninstall -n oneblock-system oneblock
+uninstall-crd: ## Uninstall CRDs from the K8s cluster.
+	$(HELM) uninstall -n oneblock-system oneblock-crd
 
 .PHONY: install-ob
 install-ob: ## Deploy api-server to the K8s cluster.
