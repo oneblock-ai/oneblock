@@ -8,5 +8,8 @@ dependencies:
 - name: gpu-operator
   repository: https://helm.ngc.nvidia.com/nvidia
   version: v23.9.1
-digest: sha256:ef9807ee4857a24e6dd85e88684720ba2b83216756dfa0495128ff764024daf5
-generated: "2024-01-09T16:16:13.741225+08:00"
+- name: volcano
+  repository: https://volcano-sh.github.io/helm-charts
+  version: 1.8.2
+digest: sha256:c349cdaec997981d096c13f3cef405b5f342e3dc39b60ce371bd18226e6a2c73
+generated: "2024-01-18T10:40:01.206297+08:00"

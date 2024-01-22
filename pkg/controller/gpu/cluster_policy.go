@@ -56,7 +56,7 @@ func (h *handler) configToolkitContainerd(policy *nvidiav1.ClusterPolicy) (*nvid
 	// check if toolkit containerd already exists by annotation
 	var provider string
 	var ok bool
-	if provider, ok = policy.Annotations[constant.ClusterPolicyProviderAnnotation]; ok {
+	if provider, ok = policy.Annotations[constant.AnnotationClusterPolicyProviderKey]; ok {
 		return policy, nil
 	}
 
@@ -91,7 +91,7 @@ func (h *handler) configToolkitContainerd(policy *nvidiav1.ClusterPolicy) (*nvid
 		if policyObj.Annotations == nil {
 			policyObj.Annotations = map[string]string{}
 		}
-		policyObj.Annotations[constant.ClusterPolicyProviderAnnotation] = detectPro
+		policyObj.Annotations[constant.AnnotationClusterPolicyProviderKey] = detectPro
 		return h.policies.Update(policyObj)
 	}
 

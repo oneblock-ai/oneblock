@@ -1,12 +1,28 @@
 package constant
 
 const (
-	DefaultSystemNamespace    = "oneblock-system"
-	ResourceStoppedAnnotation = "core.oneblock.ai/resource-stopped"
+	prefix   = "oneblock.ai/"
+	mlPrefix = "ml.oneblock.ai/"
 
-	RedisSecretKeyName = "redis-password" // #nosec G101
-	RedisSecretName    = "kuberay-redis"  // #nosec G101
+	SystemNamespaceName = "oneblock-system"
+	PublicNamespaceName = "oneblock-public"
+	RedisSecretKeyName  = "redis-password" // #nosec G101
 
-	EnabledExposeSvcAnnotation      = "ml.oneblock.ai/expose-svc"
-	ClusterPolicyProviderAnnotation = "ml.oneblock.ai/k8s-provider"
+	AnnotationResourceStopped          = prefix + "resourceStopped"
+	AnnotationVolumeClaimTemplates     = prefix + "volumeClaimTemplates"
+	AnnotationEnabledExposeSvcKey      = prefix + "exposeSvc"
+	AnnotationClusterPolicyProviderKey = prefix + "k8sProvider"
+
+	// kubeRay constant
+	LabelRaySchedulerName           = "ray.io/scheduler-name"
+	AnnotationRayClusterEnableGCS   = mlPrefix + "rayClusterEnableGCS"
+	AnnotationRayClusterInitialized = mlPrefix + "rayClusterInitialized"
+	AnnotationRayFTEnabledKey       = "ray.io/ft-enabled"
+
+	// Volcano constant
+	VolcanoSchedulerName  = "volcano"
+	LabelVolcanoQueueName = "volcano.sh/queue-name"
+
+	AnnotationDefaultSchedulingKey             = "scheduling.oneblock.ai/isDefaultQueue"
+	AnnotationSchedulingSupportedNamespacesKey = "scheduling.oneblock.ai/supportedNamespaces"
 )

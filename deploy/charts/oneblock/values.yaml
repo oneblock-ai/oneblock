@@ -1,75 +1,89 @@
-apiserver:
-  replicaCount: 1
+oneblock:
+  apiserver:
+    replicas: 1
+    image:
+      repository: ghcr.io/oneblock-ai/oneblock
+      pullPolicy: Always
+      # Overrides the image tag whose default is the chart appVersion.
+      tag: "latest"
 
-  image:
-    repository: ghcr.io/oneblock-ai/oneblock
-    pullPolicy: Always
-    # Overrides the image tag whose default is the chart appVersion.
-    tag: "latest"
+    service:
+      type: NodePort
+      ## Specify the port of HTTPs endpoint.
+      ## defaults to "8443".
+      httpsPort: 8443
+      nodePort: 30443
+      profile: 6060
 
-  service:
-    type: NodePort
-    ## Specify the port of HTTPs endpoint.
-    ## defaults to "8443".
-    httpsPort: 8443
-    nodePort: 30443
+      ## Specify the port of HTTP endpoint,
+      ## this port will be closed if set to 0.
+      ## defaults to "0".
+      httpPort: 0
+  webhook:
+    replicas: 1
+    image:
+      repository: ghcr.io/oneblock-ai/oneblock-webhook
+      pullPolicy: Always
+      # Overrides the image tag whose default is the chart appVersion.
+      tag: "latest"
 
-    ## Specify the port of HTTP endpoint,
-    ## this port will be closed if set to 0.
-    ## defaults to "0".
-    httpPort: 0
+    service:
+      type: ClusterIP
+      # specify the webhook port
+      httpsPort: 8444
+      profile: 6060
 
-    # specify the webhook port
-    webhookTargetPort: 8444
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
 
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Automatically mount a ServiceAccount's API credentials?
+    automount: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
 
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
-  # Automatically mount a ServiceAccount's API credentials?
-  automount: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
+  podAnnotations: {}
+  podLabels: {}
 
-podAnnotations: {}
-podLabels: {}
+  podSecurityContext: {}
+    # fsGroup: 2000
 
-podSecurityContext: {}
-  # fsGroup: 2000
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
 
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+  resources: {}
 
-resources: {}
+  nodeSelector: {}
 
-nodeSelector: {}
+  tolerations: []
 
-tolerations: []
+  affinity: {}
 
-affinity: {}
-
-kuberayOperator:
+kuberay-operator:
   enabled: true
-  install: false
+  image:
+    repository: kuberay/operator
+    tag: nightly
+    pullPolicy: Always
+  batchScheduler:
+    enabled: true
 
 redis:
   enabled: true
   image:
     repository: bitnami/redis
     tag: 7.2.3-debian-11-r2
-  replica:
-    replicaCount: 3
   master:
     persistence:
       enabled: true
@@ -77,7 +91,8 @@ redis:
       accessModes:
       - ReadWriteOnce
       size: 5Gi
-  replicas:
+  replica:
+    replicaCount: 3
     persistence:
       enabled: true
       storageClass: ""
@@ -91,3 +106,6 @@ redis:
 
 gpu-operator:
   enable: true
+
+volcano:
+  enabled: true

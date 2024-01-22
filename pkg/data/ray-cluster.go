@@ -2,8 +2,8 @@ package data
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/rancher/wrangler/v2/pkg/apply"
 	ctlcorev1 "github.com/rancher/wrangler/v2/pkg/generated/controllers/core/v1"
@@ -14,6 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/pointer"
 
+	"github.com/oneblock-ai/oneblock/pkg/controller/kuberay/cluster"
 	ctlrayv1 "github.com/oneblock-ai/oneblock/pkg/generated/controllers/ray.io/v1"
 	"github.com/oneblock-ai/oneblock/pkg/server/config"
 	"github.com/oneblock-ai/oneblock/pkg/settings"
@@ -21,99 +22,148 @@ import (
 )
 
 const (
-	defaultRayPVCName     = "ray-tmp-logs"
 	defaultRayClusterName = "public-ray-cluster"
+	defaultRayPVCName     = defaultRayClusterName + "-log"
 )
 
-type hander struct {
-	ctx          context.Context
-	apply        apply.Apply
-	secretsCache ctlcorev1.SecretCache
-	rayCluster   ctlrayv1.RayClusterClient
+type handler struct {
+	ctx         context.Context
+	apply       apply.Apply
+	namespaces  ctlcorev1.NamespaceClient
+	rayClusters ctlrayv1.RayClusterClient
 }
 
 func addDefaultPublicRayCluster(ctx context.Context, mgmt *config.Management, name string) error {
 	// add default public ray cluster for all authenticated users
-	handler := &hander{
-		ctx:          ctx,
-		apply:        mgmt.Apply,
-		secretsCache: mgmt.CoreFactory.Core().V1().Secret().Cache(),
-		rayCluster:   mgmt.KubeRayFactory.Ray().V1().RayCluster(),
+	nss := mgmt.CoreFactory.Core().V1().Namespace()
+	rayClusters := mgmt.KubeRayFactory.Ray().V1().RayCluster()
+	h := &handler{
+		ctx:         ctx,
+		apply:       mgmt.Apply,
+		namespaces:  nss,
+		rayClusters: rayClusters,
 	}
 
-	// skip if default ray cluster is already created
-	ray, err := handler.rayCluster.Get(defaultPublicNamespace, defaultRayClusterName, metav1.GetOptions{})
-	if ray != nil && err == nil {
-		logrus.Infof("skip creating default ray cluster %s:%s, already exist", ray.Namespace, ray.Name)
+	// check if the default ray cluster has been initialized by ns annotation
+	ns, err := h.namespaces.Get(constant.PublicNamespaceName, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	if ns.Annotations != nil && ns.Annotations[constant.AnnotationRayClusterInitialized] == "true" {
+		logrus.Infof("Skipping creating default ray cluster %s, it has already been initialized", defaultRayClusterName)
 		return nil
 	}
 
-	// create default ray log pvc
-	if err := handler.createRayLogPVC(); err != nil {
-		logrus.Errorf("failed to create ray default pvc: %v", err)
+	rayCluster, err := getDefaultRayCluster(name)
+	if err != nil {
 		return err
 	}
 
-	handler.waitForRedisSecret(name)
+	if _, err := h.rayClusters.Create(rayCluster); err != nil {
+		return err
+	}
 
+	nsCpy := ns.DeepCopy()
+	if nsCpy.Annotations == nil {
+		nsCpy.Annotations = map[string]string{}
+	}
+	nsCpy.Annotations[constant.AnnotationRayClusterInitialized] = "true"
+
+	if _, err = h.namespaces.Update(nsCpy); ns != nil {
+		return err
+	}
+
+	return nil
+}
+
+func getDefaultLogPVC() (string, error) {
+	pvcs := []corev1.PersistentVolumeClaim{
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: defaultRayPVCName,
+			},
+			Spec: corev1.PersistentVolumeClaimSpec{
+				AccessModes: []corev1.PersistentVolumeAccessMode{
+					"ReadWriteOnce",
+				},
+				Resources: corev1.ResourceRequirements{
+					Requests: corev1.ResourceList{
+						"storage": resource.MustParse("1Gi"),
+					},
+				},
+			},
+		},
+	}
+
+	pvcByte, err := json.Marshal(pvcs)
+	if err != nil {
+		return "", err
+	}
+	return string(pvcByte), nil
+}
+
+func getResourceList(cpu, memory string) (corev1.ResourceList, error) {
+	cpuRes, err := resource.ParseQuantity(cpu)
+	if err != nil {
+		return nil, err
+
+	}
+	memRes, err := resource.ParseQuantity(memory)
+	if err != nil {
+		return nil, err
+	}
+
+	return corev1.ResourceList{
+		"cpu":    cpuRes,
+		"memory": memRes,
+	}, nil
+}
+
+func getDefaultRayCluster(releaseName string) (*rayv1.RayCluster, error) {
 	upScalingMode := rayv1.UpscalingMode("Default")
 	pullPolicy := corev1.PullIfNotPresent
-	scalerRequests, err := getResourceList("200m", "128Mi")
+	scaleRequests, err := getResourceList("200m", "256Mi")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	scalerLimits, err := getResourceList("500m", "512Mi")
+	scaleLimits, err := getResourceList("500m", "512Mi")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	headRequests, err := getResourceList("250m", "512Mi")
+	headResourceReq, err := getResourceList("500m", "1Gi")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	headLimits, err := getResourceList("1", "2G")
+	headResourceLim, err := getResourceList("1", "2Gi")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	workerRequests, err := getResourceList("1", "1G")
+	workerResourceReq, err := getResourceList("1", "2Gi")
+
+	workerResourceLim, err := getResourceList("2", "4Gi")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	workerLimits, err := getResourceList("4", "10G")
+	pvcAnno, err := getDefaultLogPVC()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	annotations := map[string]string{
-		"ray.io/ft-enabled":                 "true", // enable Ray GCS FT
-		constant.EnabledExposeSvcAnnotation: "true", // auto generate exposed
+		constant.AnnotationRayFTEnabledKey:      "true", // enable Ray GCS FT
+		constant.AnnotationEnabledExposeSvcKey:  "true", // auto generate exposed svc
+		constant.AnnotationVolumeClaimTemplates: pvcAnno,
 	}
 
 	rayStartParams := map[string]string{
 		"num-cpus":       "0", // Setting "num-cpus: 0" to avoid any Ray actors or tasks being scheduled on the Ray head Pod.
 		"redis-password": "$REDIS_PASSWORD",
-	}
-
-	headNodeEnv := []corev1.EnvVar{
-		{
-			Name:  "RAY_REDIS_ADDRESS",
-			Value: getRedisSVCName(name),
-		},
-		{
-			Name: "REDIS_PASSWORD",
-			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: &corev1.SecretKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: constant.RedisSecretName,
-					},
-					Key: constant.RedisSecretKeyName,
-				},
-			},
-		},
 	}
 
 	workNodeEnv := []corev1.EnvVar{
@@ -131,11 +181,15 @@ func addDefaultPublicRayCluster(ctx context.Context, mgmt *config.Management, na
 		},
 	}
 
-	rayObj := &rayv1.RayCluster{
+	return &rayv1.RayCluster{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "public-ray-cluster",
-			Namespace:   defaultPublicNamespace,
+			Name:        defaultRayClusterName,
+			Namespace:   constant.PublicNamespaceName,
 			Annotations: annotations,
+			Labels: map[string]string{
+				constant.LabelRaySchedulerName: constant.VolcanoSchedulerName,
+				constant.LabelVolcanoQueueName: defaultQueueName,
+			},
 		},
 		Spec: rayv1.RayClusterSpec{
 			RayVersion:              settings.RayVersion.Get(),
@@ -145,8 +199,8 @@ func addDefaultPublicRayCluster(ctx context.Context, mgmt *config.Management, na
 				IdleTimeoutSeconds: pointer.Int32(60),
 				ImagePullPolicy:    &pullPolicy,
 				Resources: &corev1.ResourceRequirements{
-					Requests: scalerRequests,
-					Limits:   scalerLimits,
+					Requests: scaleRequests,
+					Limits:   scaleLimits,
 				},
 			},
 			HeadGroupSpec: rayv1.HeadGroupSpec{
@@ -171,10 +225,10 @@ func addDefaultPublicRayCluster(ctx context.Context, mgmt *config.Management, na
 										ContainerPort: 8265,
 									},
 								},
-								Env: headNodeEnv,
+								Env: cluster.GetHeadNodeRedisEnvConfig(releaseName, constant.PublicNamespaceName),
 								Resources: corev1.ResourceRequirements{
-									Requests: headRequests,
-									Limits:   headLimits,
+									Requests: headResourceReq,
+									Limits:   headResourceLim,
 								},
 								VolumeMounts: []corev1.VolumeMount{
 									{
@@ -212,8 +266,8 @@ func addDefaultPublicRayCluster(ctx context.Context, mgmt *config.Management, na
 									Name:  "ray-worker",
 									Image: fmt.Sprintf("rayproject/ray:%s", settings.RayVersion.Get()),
 									Resources: corev1.ResourceRequirements{
-										Requests: workerRequests,
-										Limits:   workerLimits,
+										Requests: workerResourceReq,
+										Limits:   workerResourceLim,
 									},
 									Lifecycle: lifecycle,
 									Env:       workNodeEnv,
@@ -224,89 +278,5 @@ func addDefaultPublicRayCluster(ctx context.Context, mgmt *config.Management, na
 				},
 			},
 		},
-	}
-
-	return handler.apply.
-		WithDynamicLookup().
-		WithSetID("public-ray-cluster").
-		ApplyObjects(rayObj)
-}
-
-func (h *hander) createRayLogPVC() error {
-	pvc := &corev1.PersistentVolumeClaim{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      defaultRayPVCName,
-			Namespace: defaultPublicNamespace,
-		},
-		Spec: corev1.PersistentVolumeClaimSpec{
-			AccessModes: []corev1.PersistentVolumeAccessMode{
-				"ReadWriteOnce",
-			},
-			Resources: corev1.ResourceRequirements{
-				Requests: corev1.ResourceList{
-					"storage": resource.MustParse("5Gi"),
-				},
-			},
-		},
-	}
-
-	return h.apply.WithDynamicLookup().WithSetID("public-ray-pvc").ApplyObjects(pvc)
-}
-
-func getResourceList(cpu, memory string) (corev1.ResourceList, error) {
-	cpuRes, err := resource.ParseQuantity(cpu)
-	if err != nil {
-		return nil, err
-
-	}
-	memRes, err := resource.ParseQuantity(memory)
-	if err != nil {
-		return nil, err
-	}
-
-	return corev1.ResourceList{
-		"cpu":    cpuRes,
-		"memory": memRes,
 	}, nil
-}
-
-func (h *hander) waitForRedisSecret(releaseName string) {
-	logrus.Debugf("wait for redis secret")
-	for {
-		// get redis secret
-		// if secret is not ready, sleep 2 second
-		// if secret is ready, return
-		select {
-		case <-time.After(2 * time.Second):
-			secret, err := h.secretsCache.Get(constant.DefaultSystemNamespace, fmt.Sprintf("%s-redis", releaseName))
-			if err != nil {
-				logrus.Warnf("Retrying to get redis secret: %v", err)
-				continue
-			}
-
-			// sync secret to the public namespace
-			syncSecret := &corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      constant.RedisSecretName,
-					Namespace: defaultPublicNamespace,
-				},
-				Data: map[string][]byte{
-					constant.RedisSecretKeyName: secret.Data[constant.RedisSecretKeyName],
-				},
-			}
-
-			err = h.apply.WithDynamicLookup().WithSetID("sync-redis-secret-to-public").ApplyObjects(syncSecret)
-			if err != nil {
-				logrus.Errorf("Retrying to apply redis secret to ns %s: %v", defaultPublicNamespace, err)
-				continue
-			}
-			return
-		case <-h.ctx.Done():
-			return
-		}
-	}
-}
-
-func getRedisSVCName(releaseName string) string {
-	return fmt.Sprintf("redis://%s-redis-master.%s.svc.cluster.local:6379", releaseName, constant.DefaultSystemNamespace)
 }

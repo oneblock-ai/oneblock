@@ -11,5 +11,5 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['{{ include "oneblock.fullname" . }}:{{ .Values.apiserver.service.httpsPort }}']
+      args: ['{{ include "oneblock.fullname" . }}:{{ .Values.oneblock.apiserver.service.httpsPort }}']
   restartPolicy: Never

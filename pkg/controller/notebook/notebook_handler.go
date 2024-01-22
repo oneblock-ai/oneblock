@@ -128,7 +128,7 @@ func (h *Handler) ensureStatefulSet(notebook *mlv1.Notebook) (*v1.StatefulSet, e
 
 func getNoteBookStatefulSet(notebook *mlv1.Notebook) *v1.StatefulSet {
 	replicas := int32(1)
-	if metav1.HasAnnotation(notebook.ObjectMeta, constant.ResourceStoppedAnnotation) {
+	if metav1.HasAnnotation(notebook.ObjectMeta, constant.AnnotationResourceStopped) {
 		replicas = 0
 	}
 

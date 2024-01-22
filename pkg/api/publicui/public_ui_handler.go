@@ -16,8 +16,9 @@ func NewPublicHandler() *Handler {
 
 func (h *Handler) ServeHTTP(rw http.ResponseWriter, _ *http.Request) {
 	utils.ResponseOKWithBody(rw, map[string]string{
-		settings.UIPlSettingName:     settings.UIPl.Get(),
-		settings.UISourceSettingName: getUISource(),
+		settings.UIPlSettingName:                  settings.UIPl.Get(),
+		settings.UISourceSettingName:              getUISource(),
+		settings.DefaultNotebookImagesSettingName: settings.NotebookDefaultImages.Get(),
 	})
 }
 

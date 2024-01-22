@@ -4,32 +4,35 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/oneblock-ai/webhook/pkg/server"
+	ws "github.com/oneblock-ai/webhook/pkg/server"
 	"github.com/oneblock-ai/webhook/pkg/server/admission"
 	"k8s.io/client-go/rest"
 
-	"github.com/oneblock-ai/oneblock/pkg/webhook/config"
-	"github.com/oneblock-ai/oneblock/pkg/webhook/user"
+	wconfig "github.com/oneblock-ai/oneblock/pkg/webhook/config"
+	rayCluster "github.com/oneblock-ai/oneblock/pkg/webhook/resources/kuberay/raycluster"
+	"github.com/oneblock-ai/oneblock/pkg/webhook/resources/user"
 )
 
-func register(mgmt *config.Management) (validators []admission.Validator, mutators []admission.Mutator) {
+func register(mgmt *wconfig.Management) (validators []admission.Validator, mutators []admission.Mutator) {
 	validators = []admission.Validator{
 		user.NewValidator(mgmt),
+		rayCluster.NewValidator(mgmt),
 	}
 
 	mutators = []admission.Mutator{
 		user.NewMutator(),
+		rayCluster.NewMutator(mgmt),
 	}
 
 	return
 }
 
-func Register(ctx context.Context, restConfig *rest.Config, threadiness int, ws *server.WebhookServer) error {
+func Register(ctx context.Context, restConfig *rest.Config, ws *ws.WebhookServer, name string, threadiness int) error {
 	// Separated factories are needed for the webhook register.
 	// Controllers are running in active/standby mode. If the webhook register and controllers are use the same factories,
 	// when the standby pod is upgraded to be active, it will be unable to add handlers and indexers to the controllers
 	// because the factories are already started.
-	mgmt, err := config.SetupManagement(ctx, restConfig)
+	mgmt, err := wconfig.SetupManagement(ctx, restConfig, name)
 	if err != nil {
 		return fmt.Errorf("setup management failed: %w", err)
 	}

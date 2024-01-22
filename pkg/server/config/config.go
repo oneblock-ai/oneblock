@@ -20,15 +20,17 @@ import (
 	obmlv1 "github.com/oneblock-ai/oneblock/pkg/generated/controllers/ml.oneblock.ai"
 	nvidiav1 "github.com/oneblock-ai/oneblock/pkg/generated/controllers/nvidia.com"
 	kuberayv1 "github.com/oneblock-ai/oneblock/pkg/generated/controllers/ray.io"
+	schedulingv1 "github.com/oneblock-ai/oneblock/pkg/generated/controllers/scheduling.volcano.sh"
 )
 
 type Management struct {
-	ctx        context.Context
-	Namespace  string
-	ClientSet  *kubernetes.Clientset
-	RestConfig *rest.Config
-	Apply      apply.Apply
-	Scheme     *runtime.Scheme
+	ctx         context.Context
+	ReleaseName string
+	Namespace   string
+	ClientSet   *kubernetes.Clientset
+	RestConfig  *rest.Config
+	Apply       apply.Apply
+	Scheme      *runtime.Scheme
 
 	OneBlockMLFactory   *obmlv1.Factory
 	OneBlockMgmtFactory *obmgmtv1.Factory
@@ -37,16 +39,18 @@ type Management struct {
 	RbacFactory         *rbacv1.Factory
 	KubeRayFactory      *kuberayv1.Factory
 	NvidiaFactory       *nvidiav1.Factory
+	SchedulingFactory   *schedulingv1.Factory
 	TokenManager        dashboardapi.TokenManager
 
 	starters []start.Starter
 }
 
-func SetupManagement(ctx context.Context, restConfig *rest.Config, namespace string) (*Management, error) {
+func SetupManagement(ctx context.Context, restConfig *rest.Config, namespace, releaseName string) (*Management, error) {
 	mgmt := &Management{
-		ctx:       ctx,
-		Namespace: namespace,
-		Scheme:    Scheme,
+		ctx:         ctx,
+		Namespace:   namespace,
+		ReleaseName: releaseName,
+		Scheme:      Scheme,
 	}
 
 	apply, err := apply.NewForConfig(restConfig)
@@ -119,6 +123,13 @@ func SetupManagement(ctx context.Context, restConfig *rest.Config, namespace str
 	}
 	mgmt.NvidiaFactory = nvidia
 	mgmt.starters = append(mgmt.starters, nvidia)
+
+	scheduling, err := schedulingv1.NewFactoryFromConfigWithOptions(restConfig, factoryOpts)
+	if err != nil {
+		return nil, err
+	}
+	mgmt.SchedulingFactory = scheduling
+	mgmt.starters = append(mgmt.starters, scheduling)
 
 	mgmt.TokenManager, err = auth.NewJWETokenManager(core.Core().V1().Secret(), namespace)
 	if err != nil {
