@@ -28,6 +28,8 @@ import (
 	fakenvidiav1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/nvidia.com/v1/fake"
 	rayv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/ray.io/v1"
 	fakerayv1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/ray.io/v1/fake"
+	schedulingv1beta1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/scheduling.volcano.sh/v1beta1"
+	fakeschedulingv1beta1 "github.com/oneblock-ai/oneblock/pkg/generated/clientset/versioned/typed/scheduling.volcano.sh/v1beta1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -103,4 +105,9 @@ func (c *Clientset) NvidiaV1() nvidiav1.NvidiaV1Interface {
 // RayV1 retrieves the RayV1Client
 func (c *Clientset) RayV1() rayv1.RayV1Interface {
 	return &fakerayv1.FakeRayV1{Fake: &c.Fake}
+}
+
+// SchedulingV1beta1 retrieves the SchedulingV1beta1Client
+func (c *Clientset) SchedulingV1beta1() schedulingv1beta1.SchedulingV1beta1Interface {
+	return &fakeschedulingv1beta1.FakeSchedulingV1beta1{Fake: &c.Fake}
 }
