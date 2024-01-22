@@ -301,8 +301,8 @@ github.com/oneblock-ai/kuberay/ray-operator v0.0.0-20240105083640-d1754c2a30ed h
 github.com/oneblock-ai/kuberay/ray-operator v0.0.0-20240105083640-d1754c2a30ed/go.mod h1:9LKD97cHDpTlWNiHAF+xPS6KKJUOmdjJaP6yaf0MftI=
 github.com/oneblock-ai/steve/v2 v2.0.0-20231208071956-a554480398db h1:xl6Zxm1HTyEcKG1NNg0x02fI85hoLgAj+aF0V2vqhPc=
 github.com/oneblock-ai/steve/v2 v2.0.0-20231208071956-a554480398db/go.mod h1:zgkg0HZZifkTrIomVh5PtGPdaDLsUNDrhTSR6l64J20=
-github.com/oneblock-ai/webhook v0.0.0-20231218135224-857f785b7789 h1:h1157UQgwY7Hj564RJx4rBeCKCVn3tANmdnl0crl1D0=
-github.com/oneblock-ai/webhook v0.0.0-20231218135224-857f785b7789/go.mod h1:To6L+2tsy7Hq6UX0GiIyZoNNtl/afq26EfzKLtTstjc=
+github.com/oneblock-ai/webhook v0.0.0-20240122084603-b51d23225312 h1:Ae6oDlsNgEr602NQlBzYABRVU0Njl8cuJmWNT/f5Jjc=
+github.com/oneblock-ai/webhook v0.0.0-20240122084603-b51d23225312/go.mod h1:To6L+2tsy7Hq6UX0GiIyZoNNtl/afq26EfzKLtTstjc=
 github.com/onsi/ginkgo v0.0.0-20170829012221-11459a886d9c/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.11.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
@@ -923,3 +923,5 @@ sigs.k8s.io/yaml v1.2.0/go.mod h1:yfXDCHCao9+ENCvLSE62v9VSji2MKu5jeNfTrofGhJc=
 sigs.k8s.io/yaml v1.3.0/go.mod h1:GeOyir5tyXNByN85N/dRIT9es5UQNerPYEKK56eTBm8=
 sigs.k8s.io/yaml v1.4.0 h1:Mk1wCc2gy/F0THH0TAp1QYyJNzRm2KCLy3o5ASXVI5E=
 sigs.k8s.io/yaml v1.4.0/go.mod h1:Ejl7/uTz7PSA4eKMyQCUTnhZYNmLIl+5c2lQPGR2BPY=
+volcano.sh/apis v1.8.2 h1:MJ1EXpdQeKG+XEhb/I3liWgMFzkgW3qCcj6qdhTuvfA=
+volcano.sh/apis v1.8.2/go.mod h1:h+xbUpkjfRaHjktAi8h+7JNnNahjwhRSgpN9FUUwNXQ=
