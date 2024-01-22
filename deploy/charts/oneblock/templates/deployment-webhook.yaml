@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "oneblock.fullname" . }}-apiserver
+  name: {{ include "oneblock.fullname" . }}-webhook
   labels:
-    {{- include "oneblock.labels" . | nindent 4 }}
+    {{- include "oneblock.webhookLabels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.oneblock.apiserver.replicas }}
+  replicas: {{ .Values.oneblock.webhook.replicas }}
   selector:
     matchLabels:
-      {{- include "oneblock.selectorLabels" . | nindent 6 }}
+      {{- include "oneblock.webhookSelectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.oneblock.podAnnotations }}
@@ -16,8 +16,8 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "oneblock.labels" . | nindent 8 }}
-        {{- with .Values.oneblock.podLabels }}
+        {{- include "oneblock.webhookLabels" . | nindent 8 }}
+ {{- with .Values.oneblock.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
@@ -29,22 +29,22 @@ spec:
       securityContext:
         {{- toYaml .Values.oneblock.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ .Chart.Name }}
-          securityContext:
+      - name: {{ .Chart.Name }}-webhook
+        securityContext:
             {{- toYaml .Values.oneblock.securityContext | nindent 12 }}
-          image: "{{ .Values.oneblock.apiserver.image.repository }}:{{ .Values.oneblock.apiserver.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.oneblock.apiserver.image.pullPolicy }}
-          ports:
-            - name: https
-              containerPort: {{ .Values.oneblock.apiserver.service.httpsPort }}
-              protocol: TCP
-            - name: profile
-              containerPort: {{ .Values.oneblock.apiserver.service.profile }}
-              protocol: TCP
-          resources:
+        image: "{{ .Values.oneblock.webhook.image.repository }}:{{ .Values.oneblock.webhook.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.oneblock.apiserver.image.pullPolicy }}
+        ports:
+        - name: webhook-https
+          containerPort: {{ .Values.oneblock.webhook.service.httpsPort }}
+          protocol: TCP
+        - name: profile
+          containerPort: {{ .Values.oneblock.webhook.service.profile }}
+          protocol: TCP
+        resources:
             {{- toYaml .Values.oneblock.resources | nindent 12 }}
           {{- with .Values.oneblock.volumeMounts }}
-          volumeMounts:
+        volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
       {{- with .Values.oneblock.volumes }}

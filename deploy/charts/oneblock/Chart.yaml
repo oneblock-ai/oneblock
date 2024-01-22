@@ -31,3 +31,9 @@ dependencies:
   tags:
   - gpu-operator
   - nvidia
+- name: volcano
+  version: 1.8.2
+  repository: https://volcano-sh.github.io/helm-charts
+  condition: volcano.enabled
+  tags:
+  - gang-scheduling

@@ -5,8 +5,8 @@ import (
 )
 
 type CommandContext struct {
-	OneBlock *OneBlockOptions
-	StdOut   io.Writer
-	StdErr   io.Writer
-	StdIn    io.Reader
+	*Oneblock
+	StdOut io.Writer
+	StdErr io.Writer
+	StdIn  io.Reader
 }

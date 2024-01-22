@@ -1,0 +1,13 @@
+FROM golang:1.21.4-bookworm
+RUN apt-get update -qq && apt-get install -y --no-install-recommends git curl unzip tar tini bash && \
+    rm -rf /var/lib/apt/lists/* && \
+    adduser --disabled-password oneblock && su -l oneblock && \
+    mkdir -p /var/lib/oneblock-ai/oneblock && \
+    chown -R oneblock /var/lib/oneblock-ai/oneblock /usr/local/bin
+
+COPY package/entrypoint-webhook.sh /usr/bin/entrypoint.sh
+COPY oneblock /usr/bin/
+RUN chmod +x /usr/bin/entrypoint.sh
+
+VOLUME /var/lib/oneblock-ai/oneblock
+ENTRYPOINT ["entrypoint.sh"]

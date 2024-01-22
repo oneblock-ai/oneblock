@@ -1,0 +1,93 @@
+apiVersion: ray.io/v1
+kind: RayCluster
+metadata:
+  name: ray-cluster-default
+  labels:
+    ray.io/scheduler-name: volcano # the gang scheduler name, currently only support volcano
+    volcano.sh/queue-name: raycluster-default # the queue name of volcano scheduler
+  annotations:
+    oneblock.ai/exposeSvc: "true" # expose the Ray dashboard service to the public via nodePort
+    # auto create pvc via annotation
+    oneblock.ai/volumeClaimTemplates: '[{"apiVersion":"v1","kind":"PersistentVolumeClaim","metadata":{"name":"ray-cluster-default-log"},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":""}}]'
+    ml.oneblock.ai/rayClusterEnableGCS: "true" # enabled GCS fault tolerance
+spec:
+  rayVersion: '2.9.0' # should match the Ray version in the image of the containers
+  # enableInTreeAutoscaling: true # enable in-tree autoscaling and the autoscalerOptions is required
+  autoscalerOptions: # webhook mutator will auto patch it if not set
+  # Ray head pod template
+  headGroupSpec:
+    # The `rayStartParams` are used to configure the `ray start` command.
+    # See https://github.com/ray-project/kuberay/blob/master/docs/guidance/rayStartParams.md for the default settings of `rayStartParams` in KubeRay.
+    # See https://docs.ray.io/en/latest/cluster/cli.html#ray-start for all available options in `rayStartParams`.
+    rayStartParams:
+      dashboard-host: '0.0.0.0'
+      # Setting "num-cpus: 0" to avoid any Ray actors or tasks being scheduled on the Ray head Pod.
+      num-cpus: "0"
+    # Pod template
+    template:
+      spec:
+        containers:
+        # The Ray head container
+        - name: ray-head
+          image: rayproject/ray:2.9.0
+          ports:
+          - containerPort: 6379
+            name: gcs
+          - containerPort: 8265
+            name: dashboard
+          - containerPort: 10001
+            name: client
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh","-c","ray stop"]
+          resources:
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+          volumeMounts:
+          - mountPath: /tmp/ray
+            name: ray-logs
+        volumes:
+        - name: ray-logs
+          persistentVolumeClaim:
+            claimName: ray-cluster-default-log
+  workerGroupSpecs:
+  # the Pod replicas in this group typed worker
+  - replicas: 1
+    minReplicas: 1
+    maxReplicas: 10
+    # logical group name, for this called small-group, also can be functional
+    groupName: small-group
+    # If worker pods need to be added, Ray Autoscaler can increment the `replicas`.
+    # If worker pods need to be removed, Ray Autoscaler decrements the replicas, and populates the `workersToDelete` list.
+    # KubeRay operator will remove Pods from the list until the desired number of replicas is satisfied.
+    #scaleStrategy:
+    #  workersToDelete:
+    #  - raycluster-complete-worker-small-group-bdtwh
+    #  - raycluster-complete-worker-small-group-hv457
+    #  - raycluster-complete-worker-small-group-k8tj7
+    rayStartParams: {}
+    # Pod template
+    template:
+      spec:
+        containers:
+        - name: default-worker
+          image: rayproject/ray:2.9.0
+          env:
+          - name: RAY_gcs_rpc_server_reconnect_timeout_s
+            value: "300"
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh","-c","ray stop"]
+          resources:
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+            requests:
+              cpu: "1"
+              memory: "2Gi"

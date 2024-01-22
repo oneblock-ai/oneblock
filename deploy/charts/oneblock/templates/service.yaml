@@ -5,14 +5,14 @@ metadata:
   labels:
     {{- include "oneblock.labels" . | nindent 4 }}
 spec:
-  type: {{ .Values.apiserver.service.type }}
+  type: {{ .Values.oneblock.apiserver.service.type }}
   ports:
-    - port: {{ .Values.apiserver.service.httpsPort }}
+    - port: {{ .Values.oneblock.apiserver.service.httpsPort }}
       targetPort: https
       protocol: TCP
       name: https
-{{ if eq .Values.apiserver.service.type "NodePort" }}
-      nodePort: {{ .Values.apiserver.service.nodePort }}
+{{ if eq .Values.oneblock.apiserver.service.type "NodePort" }}
+      nodePort: {{ .Values.oneblock.apiserver.service.nodePort }}
 {{ end }}
   selector:
     {{- include "oneblock.selectorLabels" . | nindent 4 }}
@@ -20,14 +20,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: oneblock-webhook
+  name: {{ include "oneblock.fullname" . }}-webhook
   labels:
-    {{- include "oneblock.labels" . | nindent 4 }}
+    {{- include "oneblock.webhookLabels" . | nindent 4 }}
 spec:
   ports:
     - port: 443
-      targetPort: {{ .Values.apiserver.service.webhookTargetPort }} # keep the port same as what's specified in the apiserver cmd.
+      targetPort: {{ .Values.oneblock.webhook.service.httpsPort }} # keep the port same as what's specified in the webhook cmd.
       protocol: TCP
       name: webhook-https
   selector:
-    {{- include "oneblock.selectorLabels" . | nindent 4 }}
+    {{- include "oneblock.webhookSelectorLabels" . | nindent 4 }}
