@@ -51,12 +51,23 @@ jobs:
     - name: Push Latest(main) Docker Images
       run: |
         VERSION=v$(cat dist/metadata.json | jq -r .version)
-        IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "$VERSION")
+        IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep oneblock:"$VERSION")
         for i in ${IMAGES}; do
           docker push $i
         done
         docker manifest create ${{ env.OB_REPO }}/oneblock:latest ${IMAGES}
         docker manifest push ${{ env.OB_REPO }}/oneblock:latest
+      env:
+        OB_REPO: ${{ vars.OB_REPO || 'ghcr.io/oneblock-ai' }}
+    - name: Push Latest(main) Webhook Images
+      run: |
+        VERSION=v$(cat dist/metadata.json | jq -r .version)
+        IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep webhook:"$VERSION")
+        for i in ${IMAGES}; do
+          docker push $i
+        done
+        docker manifest create ${{ env.OB_REPO }}/oneblock-webhook:latest ${IMAGES}
+        docker manifest push ${{ env.OB_REPO }}/oneblock-webhook:latest
       env:
         OB_REPO: ${{ vars.OB_REPO || 'ghcr.io/oneblock-ai' }}
     - name: Failure Slack Notification
