@@ -3,8 +3,8 @@ package server
 import (
 	"context"
 
-	dlserver "github.com/oneblock-ai/dynamiclistener/v2/server"
 	"github.com/oneblock-ai/steve/v2/pkg/server"
+	dlserver "github.com/rancher/dynamiclistener/server"
 	"github.com/rancher/wrangler/v2/pkg/k8scheck"
 	"github.com/rancher/wrangler/v2/pkg/ratelimit"
 	"k8s.io/client-go/rest"
