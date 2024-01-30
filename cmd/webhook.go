@@ -40,6 +40,7 @@ func (a *WebhookConfig) Run(cmd *cobra.Command, _ []string) error {
 	cfg := wserver.Options{
 		Context:         ctx,
 		KubeConfig:      a.cmdCtx.Kubeconfig,
+		Name:            a.cmdCtx.Name,
 		HTTPSListenPort: a.HTTPSListenPort,
 		Namespace:       a.Namespace,
 		Threadiness:     a.Threadiness,

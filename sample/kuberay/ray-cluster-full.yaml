@@ -9,7 +9,7 @@ metadata:
   annotations:
     oneblock.ai/exposeSvc: "true" # expose the Ray dashboard service to the public via nodePort
     # auto create pvc via annotation
-    oneblock.ai/volumeClaimTemplates: '[{"apiVersion":"v1","kind":"PersistentVolumeClaim","metadata":{"name":"raycluster-full-log"},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":""}}]'
+    oneblock.ai/volumeClaimTemplates: '[{"apiVersion":"v1","kind":"PersistentVolumeClaim","metadata":{"name":"raycluster-full-log"},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}}}]'
     ml.oneblock.ai/rayClusterEnableGCS: "true" # enabled GCS fault tolerance
 spec:
   rayVersion: '2.9.0' # should match the Ray version in the image of the containers

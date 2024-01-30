@@ -85,7 +85,6 @@ func patchClusterGCSConfig(releaseName string, cluster *rayv1.RayCluster) ([]adm
 }
 
 func getRayFTAnnotationPatch(cluster *rayv1.RayCluster) admission.PatchOp {
-	//patch := admission.PatchOp{}
 	annotations := cluster.Annotations
 	annotations[constant.AnnotationRayFTEnabledKey] = "true"
 
@@ -102,7 +101,16 @@ func getHeadGroupEnvPath(cluster *rayv1.RayCluster, releaseName string) admissio
 	if headGroupEnv == nil || len(headGroupEnv) == 0 {
 		headGroupEnv = redisEnvConfig
 	} else {
-		headGroupEnv = append(headGroupEnv, redisEnvConfig...)
+		for _, hEnv := range headGroupEnv {
+			for _, redisEnv := range redisEnvConfig {
+				if redisEnv.Name == hEnv.Name {
+					hEnv.Value = redisEnv.Value
+					hEnv.ValueFrom = redisEnv.ValueFrom
+				} else {
+					headGroupEnv = append(headGroupEnv, redisEnv)
+				}
+			}
+		}
 	}
 
 	return admission.PatchOp{

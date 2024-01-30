@@ -11,6 +11,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	ctlrayv1 "github.com/oneblock-ai/oneblock/pkg/generated/controllers/ray.io/v1"
+	"github.com/oneblock-ai/oneblock/pkg/utils"
+	"github.com/oneblock-ai/oneblock/pkg/utils/constant"
 	"github.com/oneblock-ai/oneblock/pkg/webhook/config"
 )
 
@@ -32,7 +34,10 @@ func (v *validator) Create(_ *admission.Request, newObj runtime.Object) error {
 
 	logrus.Debugf("[webhook validating]raycluster %s is created", cluster.Name)
 
-	return checkRayVersionIsConsistent(cluster)
+	if err := checkRayVersionIsConsistent(cluster); err != nil {
+		return err
+	}
+	return validateVolumeClaimTemplatesAnnotation(cluster)
 }
 
 func (v *validator) Update(_ *admission.Request, _, newObj runtime.Object) error {
@@ -40,7 +45,10 @@ func (v *validator) Update(_ *admission.Request, _, newObj runtime.Object) error
 
 	logrus.Debugf("[webhook validating]raycluster %s is updated", cluster.Name)
 
-	return checkRayVersionIsConsistent(cluster)
+	if err := checkRayVersionIsConsistent(cluster); err != nil {
+		return err
+	}
+	return validateVolumeClaimTemplatesAnnotation(cluster)
 }
 
 func checkRayVersionIsConsistent(cluster *rayv1.RayCluster) error {
@@ -67,6 +75,14 @@ func validateImageVersion(image string, version string) error {
 		return fmt.Errorf("image: %s is not consistent with cluster ray version %s", image, version)
 	}
 	return nil
+}
+
+func validateVolumeClaimTemplatesAnnotation(cluster *rayv1.RayCluster) error {
+	volumeClaimTemplates, ok := cluster.Annotations[constant.AnnotationVolumeClaimTemplates]
+	if !ok || volumeClaimTemplates == "" {
+		return nil
+	}
+	return utils.ValidateVolumeClaimTemplatesAnnotation(volumeClaimTemplates)
 }
 
 func (v *validator) Resource() admission.Resource {
