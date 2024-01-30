@@ -4,7 +4,7 @@ metadata:
   name: nb-jupyter
   namespace: default
   labels:
-    ml.oneblock.ai/notebook-type: juptyer
+    ml.oneblock.ai/notebook-type: jupyter
   annotations:
     oneblock.ai/volumeClaimTemplates: '[{"apiVersion":"v1","kind":"PersistentVolumeClaim","metadata":{"name":"nb-jupyter"},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}}}]'
 spec:

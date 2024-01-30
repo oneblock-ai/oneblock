@@ -10,6 +10,7 @@ import (
 
 	wconfig "github.com/oneblock-ai/oneblock/pkg/webhook/config"
 	rayCluster "github.com/oneblock-ai/oneblock/pkg/webhook/resources/kuberay/raycluster"
+	"github.com/oneblock-ai/oneblock/pkg/webhook/resources/notebook"
 	"github.com/oneblock-ai/oneblock/pkg/webhook/resources/user"
 )
 
@@ -17,11 +18,13 @@ func register(mgmt *wconfig.Management) (validators []admission.Validator, mutat
 	validators = []admission.Validator{
 		user.NewValidator(mgmt),
 		rayCluster.NewValidator(mgmt),
+		notebook.NewValidator(),
 	}
 
 	mutators = []admission.Mutator{
 		user.NewMutator(),
 		rayCluster.NewMutator(mgmt),
+		notebook.NewMutator(),
 	}
 
 	return
