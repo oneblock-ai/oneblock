@@ -1,0 +1,37 @@
+apiVersion: ml.oneblock.ai/v1
+kind: ModelTemplateVersion
+metadata:
+  name: 01-yi-6b-model
+spec:
+  # modelID is the ID that refers to the model in the OpenAI API.
+  modelID: "01-ai/Yi-6B"
+  hfModelID: "01-ai/Yi-6B"
+  engineConfig:
+    type: VLLMEngine
+    maxTotalTokens: 2048
+    # LLM engine keyword arguments passed when constructing the model.
+    vLLMArgs: |
+      trust_remote_code: true
+      max_num_seq: 16
+      dtype: half
+  deploymentConfig:
+    replicas: 1
+    maxReplicas: 5
+    maxConcurrentQueries: 32
+  scalingConfig:
+    # If using multiple GPUs set num_gpus_per_worker to be 1 and then set num_workers to be the number of GPUs you want to use.
+    numWorkers: 1
+    numGPUsPerWorker: 1
+    numCPUsPerWorker: 3
+  workerGroupSpec:
+    name: default-worker
+    runtimeClassName: nvidia
+    resources:
+      limits:
+        cpu: "6"
+        memory: "8Gi"
+        nvidia.com/gpu: "1"
+      requests:
+        cpu: "3"
+        memory: "4Gi"
+        nvidia.com/gpu: "1"

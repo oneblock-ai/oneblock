@@ -1,0 +1,8 @@
+applications:
+- name: gemma-2b-llm
+  route_prefix: /
+  import_path: rayllm.backend:router_application
+  args:
+    models:
+#      - "./models/google-gemma-2b.yaml"
+      - "./models/01-yi-6b-model.yaml"

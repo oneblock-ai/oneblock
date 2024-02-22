@@ -1,0 +1,58 @@
+apiVersion: ml.oneblock.ai/v1
+kind: MLService
+metadata:
+  name: gemma-2b-llm
+  namespace: default
+spec:
+  modelTemplateVersionRef:
+    name: google-gemma-2b-model
+    namespace: default
+  hfSecretRef:
+    name: hf-secret
+    namespace: default
+    secretKey: hf_api_token
+  mlClusterRef:
+    name: google-gemma-2b-cluster
+    namespace: default
+    rayClusterSpec:
+      version: 0.5.0
+      image: "anyscale/ray-llm"
+      enableAutoScaling: true
+      headGroupSpec:
+        serviceType: NodePort
+        volume:
+          name: gemma-2b-llm-head-log
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 5Gi
+      workerGroupSpec:
+      - name: small-wg
+        runtimeClassName: nvidia
+        replicas: 1
+        minReplicas: 1
+        maxReplicas: 5
+        acceleratorTypes:
+          Tesla-T4: 1
+        rayStartParams:
+          block: 'true'
+          resources: '"{\"accelerator_type:T4\": 1}"'
+        resources:
+          limits:
+            cpu: 6
+            memory: 10Gi
+            nvidia.com/gpu: "1"
+          requests:
+            cpu: 3
+            memory: 4Gi
+            nvidia.com/gpu: "1"
+        volume:
+          name: gemma-2b-llm-small-wg-log
+          spec:
+            accessModes:
+            - ReadWriteOnce
+            resources:
+              requests:
+                storage: 5Gi

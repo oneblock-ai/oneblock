@@ -1,0 +1,53 @@
+apiVersion: ml.oneblock.ai/v1
+kind: MLService
+metadata:
+  name: mistral-7b-llm
+  namespace: default
+spec:
+  modelTemplateVersionRef:
+    name: mistral-7b-instruct-v02
+    namespace: default
+  mlClusterRef:
+    name: mistral-7b-cluster
+    namespace: default
+    rayClusterSpec:
+      version: 0.5.0
+      image: "anyscale/ray-llm"
+      headGroupSpec:
+        rayStartParams:
+          dashboard-host: "0.0.0.0"
+          num-cpus: "0"
+        volume:
+          name: mistral-7b-llm-head-log
+          spec:
+            accessModes:
+            - ReadWriteOnce
+            resources:
+              requests:
+                storage: 5Gi
+      workerGroupSpec:
+      - name: small-wg
+        replicas: 1
+        minReplicas: 1
+        maxReplicas: 5
+        acceleratorTypes:
+          Nvidia-A10: 1
+        rayStartParams:
+          block: 'true'
+        resources:
+          limits:
+            cpu: 8
+            memory: 12Gi
+          requests:
+            cpu: 4
+            memory: 8Gi
+        nodeSelector:
+          nvidia.com/product-type: nvidia-A10
+        volume:
+          name: mistral-7b-llm-small-wg-log
+          spec:
+            accessModes:
+            - ReadWriteOnce
+            resources:
+              requests:
+                storage: 5Gi

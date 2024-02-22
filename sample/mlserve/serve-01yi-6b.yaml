@@ -1,0 +1,45 @@
+apiVersion: ml.oneblock.ai/v1
+kind: MLService
+metadata:
+  name: 01yi-6b-llm
+  namespace: default
+spec:
+  modelTemplateVersionRef:
+    name: 01-yi-6b-model
+    namespace: default
+  mlClusterRef:
+    name: 01yi-6b-llm-cluster
+    namespace: default
+    rayClusterSpec:
+      version: 0.5.0
+      image: "anyscale/ray-llm"
+      enableAutoScaling: true
+      headGroupSpec:
+        serviceType: NodePort
+        volume:
+          name: 01yi-6b-llm-head-log
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 1Gi
+      workerGroupSpec:
+      - name: small-wg
+        runtimeClassName: nvidia
+        acceleratorTypes:
+          Tesla-T4: 1
+        replicas: 1
+        minReplicas: 1
+        maxReplicas: 5
+        rayStartParams:
+          block: 'true'
+#          resources: '"{\"accelerator_type:T4\": 1}"' # change the accelerator type to your own GPU type
+        volume:
+          name: 01yi-6b-llm-small-wg-log
+          spec:
+            accessModes:
+            - ReadWriteOnce
+            resources:
+              requests:
+                storage: 5Gi
