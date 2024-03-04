@@ -58,18 +58,18 @@ func PodCondToNotebookCond(pCond corev1.PodCondition) mgmtv1.Condition {
 	// the field with metav1.Now()
 	check := pCond.LastProbeTime.Time.Equal(time.Time{})
 	if !check {
-		condition.LastUpdateTime = pCond.LastProbeTime
+		condition.LastUpdateTime = pCond.LastProbeTime.Format(time.RFC3339)
 	} else {
-		condition.LastUpdateTime = metav1.Now()
+		condition.LastUpdateTime = metav1.Now().UTC().Format(time.RFC3339)
 	}
 
 	// check if pCond.LastTransitionTime is null. If so initialize
 	// the field with metav1.Now()
 	check = pCond.LastTransitionTime.Time.Equal(time.Time{})
 	if !check {
-		condition.LastTransitionTime = pCond.LastTransitionTime
+		condition.LastTransitionTime = pCond.LastTransitionTime.Format(time.RFC3339)
 	} else {
-		condition.LastTransitionTime = metav1.Now()
+		condition.LastTransitionTime = metav1.Now().UTC().Format(time.RFC3339)
 	}
 
 	return condition

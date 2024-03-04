@@ -48,36 +48,34 @@ type Handler struct {
 	services         ctlcorev1.ServiceClient
 	serviceCache     ctlcorev1.ServiceCache
 	podCache         ctlcorev1.PodCache
-	pvcs             ctlcorev1.PersistentVolumeClaimClient
-	pvcCache         ctlcorev1.PersistentVolumeClaimCache
+	pvcHandler       *utils.PVCHandler
 }
 
 const (
 	notebookControllerOnChange  = "notebook.onChange"
-	notebookControllerCreatePVC = "notebook.createPVCFromAnnotation"
+	notebookControllerCreatePVC = "notebook.createNoteBookPVC"
 	notebookControllerWatchPods = "notebook.watchPods"
 )
 
 func Register(ctx context.Context, mgmt *config.Management) error {
 	notebooks := mgmt.OneBlockMLFactory.Ml().V1().Notebook()
-	statefulsets := mgmt.AppsFactory.Apps().V1().StatefulSet()
+	ss := mgmt.AppsFactory.Apps().V1().StatefulSet()
 	services := mgmt.CoreFactory.Core().V1().Service()
 	pods := mgmt.CoreFactory.Core().V1().Pod()
 	pvcs := mgmt.CoreFactory.Core().V1().PersistentVolumeClaim()
 	h := Handler{
 		scheme:           mgmt.Scheme,
 		notebooks:        notebooks,
-		statefulSets:     statefulsets,
-		statefulSetCache: statefulsets.Cache(),
+		statefulSets:     ss,
+		statefulSetCache: ss.Cache(),
 		services:         services,
 		serviceCache:     services.Cache(),
 		podCache:         pods.Cache(),
-		pvcs:             pvcs,
-		pvcCache:         pvcs.Cache(),
+		pvcHandler:       utils.NewPVCHandler(pvcs, pvcs.Cache()),
 	}
 
 	notebooks.OnChange(ctx, notebookControllerOnChange, h.OnChanged)
-	notebooks.OnChange(ctx, notebookControllerCreatePVC, h.createPVCFromAnnotation)
+	notebooks.OnChange(ctx, notebookControllerCreatePVC, h.createNoteBookPVC)
 	relatedresource.Watch(ctx, notebookControllerWatchPods, h.ReconcileNotebookPodOwners, notebooks, pods)
 	return nil
 }
@@ -87,14 +85,23 @@ func (h *Handler) OnChanged(_ string, notebook *mlv1.Notebook) (*mlv1.Notebook, 
 		return nil, nil
 	}
 
-	// create notebook statefulset if not exist
+	// create notebook statefulSet if not exist
 	ss, err := h.ensureStatefulSet(notebook)
 	if err != nil {
 		return notebook, err
 	}
 
+	// sync pod template spec from ss to notebook after update
+	if !reflect.DeepEqual(ss.Spec.Template.Spec, notebook.Spec.Template.Spec) {
+		nbCpy := notebook.DeepCopy()
+		nbCpy.Spec.Template.Spec = ss.Spec.Template.Spec
+		if _, err = h.notebooks.Update(nbCpy); err != nil {
+			return notebook, err
+		}
+	}
+
 	// create notebook service if not exist
-	if err := h.generateService(notebook); err != nil {
+	if err = h.generateService(notebook); err != nil {
 		return notebook, err
 	}
 
@@ -110,28 +117,24 @@ func (h *Handler) OnChanged(_ string, notebook *mlv1.Notebook) (*mlv1.Notebook, 
 func (h *Handler) ensureStatefulSet(notebook *mlv1.Notebook) (*v1.StatefulSet, error) {
 	logrus.Debugf("Ensure statefulset for notebook %s/%s", notebook.Namespace, notebook.Name)
 	ss, err := h.statefulSetCache.Get(notebook.Namespace, notebook.Name)
-	if err != nil && !errors.IsNotFound(err) {
+	if err != nil {
+		if errors.IsNotFound(err) {
+			logrus.Infof("Generating statefulset for notebook %s/%s", notebook.Namespace, notebook.Name)
+			ss = getNoteBookStatefulSet(notebook)
+
+			if err = ctrl.SetControllerReference(notebook, ss, h.scheme); err != nil {
+				return nil, err
+			}
+			return h.statefulSets.Create(ss)
+		}
 		return nil, err
-	}
-
-	if ss == nil {
-		logrus.Infof("Generating statefulset for notebook %s/%s", notebook.Namespace, notebook.Name)
-		ss = getNoteBookStatefulSet(notebook)
-
-		if err := ctrl.SetControllerReference(notebook, ss, h.scheme); err != nil {
-			return nil, err
-		}
-
-		if ss, err := h.statefulSets.Create(ss); err != nil {
-			return ss, err
-		}
 	}
 
 	if !reflect.DeepEqual(notebook.Spec.Template.Spec, ss.Spec.Template.Spec) {
 		logrus.Infof("Updating notebook statefulset %s/%s", notebook.Namespace, notebook.Name)
 		ssCopy := ss.DeepCopy()
 		ssCopy.Spec.Template.Spec = notebook.Spec.Template.Spec
-		if ss, err := h.statefulSets.Update(ssCopy); err != nil {
+		if ss, err = h.statefulSets.Update(ssCopy); err != nil {
 			return ss, err
 		}
 	}
@@ -189,6 +192,7 @@ func getNoteBookStatefulSet(notebook *mlv1.Notebook) *v1.StatefulSet {
 
 	podSpec := &ss.Spec.Template.Spec
 	container := &podSpec.Containers[0]
+	container.Name = notebook.Name
 	if container.WorkingDir == "" {
 		container.WorkingDir = "/home/jovyan"
 	}
@@ -317,7 +321,7 @@ func (h *Handler) updateNotebookStatus(notebook *mlv1.Notebook, ss *v1.StatefulS
 	}
 
 	if reflect.DeepEqual(pod.Status, corev1.PodStatus{}) {
-		logrus.Infoln("Empty pod status, won't update notebook status")
+		logrus.Debugln("Empty pod status, won't update notebook status")
 		return nil
 	}
 
@@ -341,7 +345,7 @@ func (h *Handler) updateNotebookStatus(notebook *mlv1.Notebook, ss *v1.StatefulS
 			continue
 		}
 
-		if pod.Status.ContainerStatuses[i].State == nbCopy.Status.State {
+		if pod.Status.ContainerStatuses[i].State == notebook.Status.State {
 			continue
 		}
 
@@ -355,7 +359,7 @@ func (h *Handler) updateNotebookStatus(notebook *mlv1.Notebook, ss *v1.StatefulS
 	}
 
 	if !notebookContainerFound {
-		logrus.Warnln("Could not find notebook container, Will not update notebook's status.state")
+		logrus.Debugf("Could not find notebook container %s, Will not update notebook's status.state", notebook.Name)
 	}
 
 	// Mirroring pod condition

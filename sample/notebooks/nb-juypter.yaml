@@ -5,8 +5,6 @@ metadata:
   namespace: default
   labels:
     ml.oneblock.ai/notebook-type: jupyter
-  annotations:
-    oneblock.ai/volumeClaimTemplates: '[{"apiVersion":"v1","kind":"PersistentVolumeClaim","metadata":{"name":"nb-jupyter"},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}}}]'
 spec:
   serviceType: NodePort
   template:
@@ -18,8 +16,6 @@ spec:
           requests:
             cpu: 200m
             memory: 500Mi
-#          limits:
-#            nvidia.com/gpu: 1 # optional, requesting 1 GPU
         volumeMounts:
         - mountPath: /home/jovyan
           name: test-vol
@@ -28,7 +24,15 @@ spec:
       volumes:
       - name: test-vol
         persistentVolumeClaim:
-          claimName: nb-jupyter # keep the name to be consistent with the annotation volumeClaimTemplates
+          claimName: nb-jupyter # keep the name to be consistent with the spec.volumes name
       - emptyDir:
           medium: Memory
         name: dshm
+  volumes:
+  - name: nb-jupyter
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 2Gi
