@@ -8,30 +8,17 @@ spec:
   hfModelID: "mistralai/Mistral-7B-Instruct-v0.2"
   engineConfig:
     type: VLLMEngine
-    maxTotalTokens: 2048
+    maxTotalTokens: 4096
     # LLM engine keyword arguments passed when constructing the model.
     vLLMArgs: |
       trust_remote_code: true
-      max_num_batched_tokens: 2048
+      max_num_batched_tokens: 4096
       max_num_seq: 32
-      dtype: auto
   deploymentConfig:
     replicas: 1
     maxReplicas: 5
-    maxConcurrentQueries: 32
+    maxConcurrentQueries: 64
   scalingConfig:
-    # If using multiple GPUs set num_gpus_per_worker to be 1 and then set num_workers to be the number of GPUs you want to use.
+    # The GPUs per worker is default to 1, if you want to using multiple GPUs just set numWorkers to be the number of GPUs you want to use.
     numWorkers: 1
-    numGPUsPerWorker: 1
-    numCPUsPerWorker: 3
-  workerGroupSpec:
-    name: default-worker
-    resources:
-      limits:
-        cpu: "8"
-        memory: "12Gi"
-        nvidia.com/gpu: "1"
-      requests:
-        cpu: "4"
-        memory: "8Gi"
-        nvidia.com/gpu: "1"
+    numCPUsPerWorker: 8

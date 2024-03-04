@@ -20,4 +20,8 @@ package v1
 
 type DatasetExpansion interface{}
 
+type MLServiceExpansion interface{}
+
+type ModelTemplateVersionExpansion interface{}
+
 type NotebookExpansion interface{}

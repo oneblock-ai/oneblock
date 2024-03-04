@@ -8,8 +8,6 @@ spec:
     name: 01-yi-6b-model
     namespace: default
   mlClusterRef:
-    name: 01yi-6b-llm-cluster
-    namespace: default
     rayClusterSpec:
       version: 0.5.0
       image: "anyscale/ray-llm"
@@ -27,14 +25,24 @@ spec:
       workerGroupSpec:
       - name: small-wg
         runtimeClassName: nvidia
-        acceleratorTypes:
-          Tesla-T4: 1
         replicas: 1
         minReplicas: 1
         maxReplicas: 5
+        acceleratorTypes:
+          Tesla-T4: 1
         rayStartParams:
           block: 'true'
-#          resources: '"{\"accelerator_type:T4\": 1}"' # change the accelerator type to your own GPU type
+          # change the accelerator type to your own GPU type or specify via acceleratorTypes
+#          resources: '"{\"accelerator_type:T4\": 1}"'
+        resources:
+          limits:
+            cpu: 8
+            memory: 10Gi
+            nvidia.com/gpu: "1"
+          requests:
+            cpu: 6
+            memory: 8Gi
+            nvidia.com/gpu: "1"
         volume:
           name: 01yi-6b-llm-small-wg-log
           spec:

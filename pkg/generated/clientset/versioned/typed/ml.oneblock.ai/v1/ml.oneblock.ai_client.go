@@ -29,6 +29,8 @@ import (
 type MlV1Interface interface {
 	RESTClient() rest.Interface
 	DatasetsGetter
+	MLServicesGetter
+	ModelTemplateVersionsGetter
 	NotebooksGetter
 }
 
@@ -39,6 +41,14 @@ type MlV1Client struct {
 
 func (c *MlV1Client) Datasets(namespace string) DatasetInterface {
 	return newDatasets(c, namespace)
+}
+
+func (c *MlV1Client) MLServices(namespace string) MLServiceInterface {
+	return newMLServices(c, namespace)
+}
+
+func (c *MlV1Client) ModelTemplateVersions(namespace string) ModelTemplateVersionInterface {
+	return newModelTemplateVersions(c, namespace)
 }
 
 func (c *MlV1Client) Notebooks(namespace string) NotebookInterface {

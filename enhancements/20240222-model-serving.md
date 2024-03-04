@@ -121,26 +121,6 @@ metadata:
   name: mistral-7b-instruct-v02
   namespace: default
 spec:
-  deployment_config:
-  # This corresponds to Ray Serve settings, as generated with
-  # `serve build`.
-  autoscaling_config:
-    min_replicas: 1
-    initial_replicas: 1
-    max_replicas: 1
-    target_num_ongoing_requests_per_replica: 24
-    metrics_interval_s: 10.0
-    look_back_period_s: 30.0
-    smoothing_factor: 0.5
-    downscale_delay_s: 300.0
-    upscale_delay_s: 90.0
-  max_concurrent_queries: 64
-  ray_actor_options:
-    # Resources assigned to each model deployment. The deployment will be
-    # initialized first, and then start prediction workers which actually hold the model.
-    resources:
-      accelerator_type:<GPU_type>: 0.01 # auto configured by MLServe's mlClusterRef
-      # accelerator_type_cpu: 0.01
   engine_config:
     # Model id - this is a RayLLM id
     model_id: "mistralai/Mistral-7B-Instruct-v0.2"
