@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	ctloneblockv1 "github.com/oneblock-ai/oneblock/pkg/generated/controllers/ml.oneblock.ai/v1"
-
 	oneblockv1 "github.com/oneblock-ai/oneblock/pkg/apis/ml.oneblock.ai/v1"
+	ctloneblockv1 "github.com/oneblock-ai/oneblock/pkg/generated/controllers/ml.oneblock.ai/v1"
 	"github.com/oneblock-ai/oneblock/pkg/server/config"
 )
 

@@ -15,19 +15,21 @@ import (
 
 const (
 	kubeRayControllerSyncCluster = "rayCluster.syncCluster"
+	kubeRayControllerOnDelete    = "rayCluster.onDelete"
 	kubeRayControllerCreatePVC   = "rayCluster.createPVCFromAnnotation"
 )
 
 // handler reconcile the user's clusterRole and clusterRoleBinding
 type handler struct {
 	releaseName  string
-	rayClusters  ctlkuberayv1.RayClusterClient
+	rayClusters  ctlkuberayv1.RayClusterController
 	services     ctlcorev1.ServiceClient
 	serviceCache ctlcorev1.ServiceCache
 	secrets      ctlcorev1.SecretClient
 	secretsCache ctlcorev1.SecretCache
 	pvcs         ctlcorev1.PersistentVolumeClaimClient
 	pvcCache     ctlcorev1.PersistentVolumeClaimCache
+	configmap    ctlcorev1.ConfigMapClient
 }
 
 func Register(ctx context.Context, mgmt *config.Management) error {
@@ -35,6 +37,7 @@ func Register(ctx context.Context, mgmt *config.Management) error {
 	services := mgmt.CoreFactory.Core().V1().Service()
 	secrets := mgmt.CoreFactory.Core().V1().Secret()
 	pvcs := mgmt.CoreFactory.Core().V1().PersistentVolumeClaim()
+	configmaps := mgmt.CoreFactory.Core().V1().ConfigMap()
 
 	h := &handler{
 		releaseName:  mgmt.ReleaseName,
@@ -45,10 +48,12 @@ func Register(ctx context.Context, mgmt *config.Management) error {
 		secretsCache: secrets.Cache(),
 		pvcs:         pvcs,
 		pvcCache:     pvcs.Cache(),
+		configmap:    configmaps,
 	}
 
 	clusters.OnChange(ctx, kubeRayControllerSyncCluster, h.OnChanged)
 	clusters.OnChange(ctx, kubeRayControllerCreatePVC, h.createPVCFromAnnotation)
+	clusters.OnRemove(ctx, kubeRayControllerOnDelete, h.OnDelete)
 	return nil
 }
 
@@ -100,4 +105,28 @@ func (h *handler) ensureService(cluster *rayv1.RayCluster) error {
 	}
 
 	return nil
+}
+
+func (h *handler) OnDelete(_ string, cluster *rayv1.RayCluster) (*rayv1.RayCluster, error) {
+	if cluster == nil || cluster.DeletionTimestamp == nil {
+		return nil, nil
+	}
+
+	// clean up the mounted resources
+	modelTemplateVersionName := cluster.Annotations[constant.AnnoModelTemplateVersionName]
+	if modelTemplateVersionName != "" {
+		// waiting for redis clean up job finished first since it will mount all volumes to it
+		for _, f := range cluster.Finalizers {
+			if f == constant.RayRedisCleanUpFinalizer {
+				h.rayClusters.Enqueue(cluster.Namespace, cluster.Name)
+				return cluster, nil
+			}
+		}
+		err := h.configmap.Delete(cluster.Namespace, modelTemplateVersionName, &metav1.DeleteOptions{})
+		if err != nil && !errors.IsNotFound(err) {
+			return cluster, err
+		}
+	}
+
+	return nil, nil
 }

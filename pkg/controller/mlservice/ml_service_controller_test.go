@@ -1,4 +1,4 @@
-package dataset
+package mlservice
 
 import (
 	"fmt"
