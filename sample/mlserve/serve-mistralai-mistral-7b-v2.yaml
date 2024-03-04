@@ -29,7 +29,7 @@ spec:
         minReplicas: 1
         maxReplicas: 5
         acceleratorTypes:
-          Nvidia-A10: 1
+          Nvidia-A10G: 1
         rayStartParams:
           block: 'true'
         resources:
@@ -39,8 +39,6 @@ spec:
           requests:
             cpu: 4
             memory: 8Gi
-        nodeSelector:
-          nvidia.com/product-type: nvidia-A10
         volume:
           name: mistral-7b-llm-small-wg-log
           spec:

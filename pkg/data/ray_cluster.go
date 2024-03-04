@@ -144,6 +144,9 @@ func getDefaultRayCluster(releaseName string) (*rayv1.RayCluster, error) {
 	}
 
 	workerResourceReq, err := getResourceList("1", "2Gi")
+	if err != nil {
+		return nil, err
+	}
 
 	workerResourceLim, err := getResourceList("2", "4Gi")
 	if err != nil {

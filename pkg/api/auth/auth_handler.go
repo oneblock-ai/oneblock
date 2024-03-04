@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
+	jwt "github.com/golang-jwt/jwt/v5"
 	dashboardauthapi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
 	"github.com/oneblock-ai/apiserver/v2/pkg/apierror"
 	"github.com/pkg/errors"
