@@ -43,6 +43,40 @@ func NewDataset(namespace, name string, obj Dataset) *Dataset {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
+// MLServiceList is a list of MLService resources
+type MLServiceList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata"`
+
+	Items []MLService `json:"items"`
+}
+
+func NewMLService(namespace, name string, obj MLService) *MLService {
+	obj.APIVersion, obj.Kind = SchemeGroupVersion.WithKind("MLService").ToAPIVersionAndKind()
+	obj.Name = name
+	obj.Namespace = namespace
+	return &obj
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// ModelTemplateVersionList is a list of ModelTemplateVersion resources
+type ModelTemplateVersionList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata"`
+
+	Items []ModelTemplateVersion `json:"items"`
+}
+
+func NewModelTemplateVersion(namespace, name string, obj ModelTemplateVersion) *ModelTemplateVersion {
+	obj.APIVersion, obj.Kind = SchemeGroupVersion.WithKind("ModelTemplateVersion").ToAPIVersionAndKind()
+	obj.Name = name
+	obj.Namespace = namespace
+	return &obj
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
 // NotebookList is a list of Notebook resources
 type NotebookList struct {
 	metav1.TypeMeta `json:",inline"`

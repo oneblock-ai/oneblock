@@ -32,6 +32,8 @@ func init() {
 
 type Interface interface {
 	Dataset() DatasetController
+	MLService() MLServiceController
+	ModelTemplateVersion() ModelTemplateVersionController
 	Notebook() NotebookController
 }
 
@@ -47,6 +49,14 @@ type version struct {
 
 func (v *version) Dataset() DatasetController {
 	return generic.NewController[*v1.Dataset, *v1.DatasetList](schema.GroupVersionKind{Group: "ml.oneblock.ai", Version: "v1", Kind: "Dataset"}, "datasets", true, v.controllerFactory)
+}
+
+func (v *version) MLService() MLServiceController {
+	return generic.NewController[*v1.MLService, *v1.MLServiceList](schema.GroupVersionKind{Group: "ml.oneblock.ai", Version: "v1", Kind: "MLService"}, "mlservices", true, v.controllerFactory)
+}
+
+func (v *version) ModelTemplateVersion() ModelTemplateVersionController {
+	return generic.NewController[*v1.ModelTemplateVersion, *v1.ModelTemplateVersionList](schema.GroupVersionKind{Group: "ml.oneblock.ai", Version: "v1", Kind: "ModelTemplateVersion"}, "modeltemplateversions", true, v.controllerFactory)
 }
 
 func (v *version) Notebook() NotebookController {

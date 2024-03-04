@@ -8,8 +8,6 @@ spec:
     name: mistral-7b-instruct-v02
     namespace: default
   mlClusterRef:
-    name: mistral-7b-cluster
-    namespace: default
     rayClusterSpec:
       version: 0.5.0
       image: "anyscale/ray-llm"

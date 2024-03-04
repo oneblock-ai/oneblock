@@ -27,6 +27,7 @@ type NotebookSpec struct {
 	// Template describes the notebooks that will be created.
 	Template    NotebookTemplateSpec `json:"template,omitempty"`
 	ServiceType corev1.ServiceType   `json:"serviceType,omitempty"`
+	Volumes     []Volume             `json:"volumes,omitempty"`
 }
 
 type NotebookTemplateSpec struct {

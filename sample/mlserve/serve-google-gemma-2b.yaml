@@ -12,8 +12,6 @@ spec:
     namespace: default
     secretKey: hf_api_token
   mlClusterRef:
-    name: google-gemma-2b-cluster
-    namespace: default
     rayClusterSpec:
       version: 0.5.0
       image: "anyscale/ray-llm"
@@ -41,12 +39,12 @@ spec:
           resources: '"{\"accelerator_type:T4\": 1}"'
         resources:
           limits:
-            cpu: 6
-            memory: 10Gi
+            cpu: 4
+            memory: 8Gi
             nvidia.com/gpu: "1"
           requests:
             cpu: 3
-            memory: 4Gi
+            memory: 6Gi
             nvidia.com/gpu: "1"
         volume:
           name: gemma-2b-llm-small-wg-log
