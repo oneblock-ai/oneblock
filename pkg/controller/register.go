@@ -8,10 +8,10 @@ import (
 	obAuth "github.com/oneblock-ai/oneblock/pkg/controller/auth"
 	"github.com/oneblock-ai/oneblock/pkg/controller/dataset"
 	"github.com/oneblock-ai/oneblock/pkg/controller/gpu"
-	"github.com/oneblock-ai/oneblock/pkg/controller/kuberay/cluster"
 	"github.com/oneblock-ai/oneblock/pkg/controller/mlservice"
 	"github.com/oneblock-ai/oneblock/pkg/controller/modeltemplate"
 	"github.com/oneblock-ai/oneblock/pkg/controller/notebook"
+	"github.com/oneblock-ai/oneblock/pkg/controller/raycluster"
 	"github.com/oneblock-ai/oneblock/pkg/controller/setting"
 	"github.com/oneblock-ai/oneblock/pkg/controller/user"
 	"github.com/oneblock-ai/oneblock/pkg/indexeres"
@@ -27,7 +27,7 @@ var registerFuncs = []registerFunc{
 	setting.Register,
 	dataset.Register,
 	user.Register,
-	cluster.Register,
+	raycluster.Register,
 	gpu.Register,
 	notebook.Register,
 	modeltemplate.Register,

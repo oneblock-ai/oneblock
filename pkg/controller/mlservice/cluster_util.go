@@ -9,7 +9,7 @@ import (
 	"k8s.io/utils/pointer"
 
 	mlv1 "github.com/oneblock-ai/oneblock/pkg/apis/ml.oneblock.ai/v1"
-	"github.com/oneblock-ai/oneblock/pkg/controller/kuberay/cluster"
+	"github.com/oneblock-ai/oneblock/pkg/controller/raycluster"
 	"github.com/oneblock-ai/oneblock/pkg/utils"
 )
 
@@ -124,7 +124,7 @@ func GetHeadGroupSpecConfig(mlService *mlv1.MLService, modelTmpVersion *mlv1.Mod
 					Name:  "ray-head",
 					Image: image,
 					Ports: getDefaultClusterPorts(),
-					Env:   cluster.GetHeadNodeRedisEnvConfig(releaseName, mlService.Namespace),
+					Env:   raycluster.GetHeadNodeRedisEnvConfig(releaseName, mlService.Namespace),
 					Resources: corev1.ResourceRequirements{
 						Requests: requests,
 						Limits:   limits,

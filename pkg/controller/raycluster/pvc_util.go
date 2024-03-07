@@ -1,4 +1,4 @@
-package cluster
+package raycluster
 
 import (
 	"encoding/json"
@@ -54,7 +54,7 @@ func (h *handler) createPVCFromAnnotation(_ string, cluster *rayv1.RayCluster) (
 		}
 
 		// users may also resize the volumes outside the annotation. In that case, we can't track the update.
-		// If the storage request in the cluster annotation is less or equal to the actual PVC size, just skip it.
+		// If the storage request in the annotation is less or equal to the actual PVC size, just skip it.
 		if annoPVC.Spec.Resources.Requests.Storage().Cmp(*pvc.Spec.Resources.Requests.Storage()) <= 0 {
 			continue
 		}

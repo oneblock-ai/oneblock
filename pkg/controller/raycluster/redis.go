@@ -1,4 +1,4 @@
-package cluster
+package raycluster
 
 import (
 	"fmt"
@@ -33,7 +33,7 @@ func (h *handler) syncGCSRedisSecretToNamespace(releaseName string, rayCluster *
 		return err
 	}
 
-	// sync GCS redis secret to the ray cluster namespace
+	// sync GCS redis secret to the cluster namespace
 	if !reflect.DeepEqual(redisSecret.Data, nsSecret.Data) {
 		secretCpy := nsSecret.DeepCopy()
 		secretCpy.Data = map[string][]byte{
