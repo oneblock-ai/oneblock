@@ -10,7 +10,6 @@ const (
 
 	AnnotationResourceStopped          = Prefix + "resourceStopped"
 	AnnotationVolumeClaimTemplates     = Prefix + "volumeClaimTemplates"
-	AnnotationEnabledExposeSvcKey      = Prefix + "exposeSvc"
 	AnnotationClusterPolicyProviderKey = Prefix + "k8sProvider"
 	AnnoModelTemplateVersionName       = Prefix + "modelTemplateVersionName"
 
@@ -20,6 +19,7 @@ const (
 	AnnotationRayClusterInitialized = MLPrefix + "rayClusterInitialized"
 	AnnotationRayFTEnabledKey       = "ray.io/ft-enabled"
 	RayRedisCleanUpFinalizer        = "ray.io/gcs-ft-redis-cleanup-finalizer"
+	RayServiceKind                  = "RayService"
 
 	// Volcano constant
 	VolcanoSchedulerName  = "volcano"

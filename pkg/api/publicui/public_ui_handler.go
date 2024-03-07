@@ -19,6 +19,9 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, _ *http.Request) {
 		settings.UIPlSettingName:                  settings.UIPl.Get(),
 		settings.UISourceSettingName:              getUISource(),
 		settings.DefaultNotebookImagesSettingName: settings.NotebookDefaultImages.Get(),
+		settings.DefaultRayVersion:                settings.RayVersion.Get(),
+		settings.DefaultRayClusterImage:           settings.RayClusterImage.Get(),
+		settings.FirstLoginSettingName:            settings.FirstLogin.Get(),
 	})
 }
 

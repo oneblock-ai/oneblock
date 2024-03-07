@@ -1,4 +1,4 @@
-package cluster
+package raycluster
 
 import (
 	"context"
@@ -62,49 +62,10 @@ func (h *handler) OnChanged(_ string, cluster *rayv1.RayCluster) (*rayv1.RayClus
 		return cluster, nil
 	}
 
-	// sync GCS Redis secret to the ray cluster namespace
+	// sync GCS Redis secret to the cluster namespace
 	h.syncGCSRedisSecretToNamespace(h.releaseName, cluster)
 
-	if err := h.ensureService(cluster); err != nil {
-		return cluster, err
-	}
-
 	return nil, nil
-}
-
-// ensureService create an expose service for the ray cluster if the annotation is specified by the user
-func (h *handler) ensureService(cluster *rayv1.RayCluster) error {
-	// check if service already exists by annotation
-	if cluster.Annotations == nil {
-		return nil
-	}
-	v, ok := cluster.Annotations[constant.AnnotationEnabledExposeSvcKey]
-	if !ok {
-		return nil
-	}
-
-	svcName := getClusterExposeServiceName(cluster.Name)
-	svc, err := h.serviceCache.Get(cluster.Namespace, svcName)
-	if err != nil && !errors.IsNotFound(err) {
-		return err
-	}
-
-	if v == "true" && svc == nil {
-		newSvc := getExposeSvc(cluster)
-		if _, err := h.services.Create(newSvc); err != nil {
-			return err
-		}
-		// only create service if not exist
-		if svc != nil {
-			return nil
-		}
-
-		return err
-	} else if v == "false" && svc != nil {
-		return h.services.Delete(svc.Namespace, svc.Name, &metav1.DeleteOptions{})
-	}
-
-	return nil
 }
 
 func (h *handler) OnDelete(_ string, cluster *rayv1.RayCluster) (*rayv1.RayCluster, error) {
@@ -114,14 +75,19 @@ func (h *handler) OnDelete(_ string, cluster *rayv1.RayCluster) (*rayv1.RayClust
 
 	// clean up the mounted resources
 	modelTemplateVersionName := cluster.Annotations[constant.AnnoModelTemplateVersionName]
-	if modelTemplateVersionName != "" {
-		// waiting for redis clean up job finished first since it will mount all volumes to it
-		for _, f := range cluster.Finalizers {
-			if f == constant.RayRedisCleanUpFinalizer {
-				h.rayClusters.Enqueue(cluster.Namespace, cluster.Name)
-				return cluster, nil
-			}
+	if modelTemplateVersionName == "" {
+		return nil, nil
+	}
+
+	// wait for the redis clean up job finished first since it will mount all volumes and configmaps to it
+	for _, f := range cluster.Finalizers {
+		if f == constant.RayRedisCleanUpFinalizer {
+			h.rayClusters.Enqueue(cluster.Namespace, cluster.Name)
+			return cluster, nil
 		}
+	}
+
+	if modelTemplateVersionName != "" {
 		err := h.configmap.Delete(cluster.Namespace, modelTemplateVersionName, &metav1.DeleteOptions{})
 		if err != nil && !errors.IsNotFound(err) {
 			return cluster, err

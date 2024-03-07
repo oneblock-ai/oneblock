@@ -19,14 +19,15 @@ var (
 	APIUIVersion           = NewSetting("api-ui-version", "1.1.10") // Please update the ONEBLOCK_API_UI_VERSION in Dockerfile when updating the version here.
 	AuthSecretName         = NewSetting("auth-secret-name", "oneblock-key-holder")
 	AuthTokenMaxTTLMinutes = NewSetting("auth-token-max-ttl-minutes", "720")
-	FirstLogin             = NewSetting("first-login", "true")
+	FirstLogin             = NewSetting(FirstLoginSettingName, "true")
 	ServerURL              = NewSetting("server-url", "")
 	ServerVersion          = NewSetting("server-version", "dev")
 	UIIndex                = NewSetting("ui-index", "https://releases.1block.ai/dashboard/latest/index.html")
 	UIPath                 = NewSetting("ui-path", "/usr/share/oneblock-ai/oneblock")
 	UIPl                   = NewSetting(UIPlSettingName, "oneblock")
 	UISource               = NewSetting(UISourceSettingName, "auto") // Options are 'auto', 'external' or 'bundled'
-	RayVersion             = NewSetting("ray-version", "2.9.0")      // Default ray install version
+	RayVersion             = NewSetting(DefaultRayVersion, "2.9.3")  // Default ray install version
+	RayClusterImage        = NewSetting(DefaultRayClusterImage, "anyscale/ray:2.9.3")
 	NotebookDefaultImages  = NewSetting(DefaultNotebookImagesSettingName, setDefaultNotebookImages())
 )
 
@@ -34,6 +35,9 @@ const (
 	UIPlSettingName                  = "ui-pl"
 	UISourceSettingName              = "ui-source"
 	DefaultNotebookImagesSettingName = "default-notebook-images"
+	DefaultRayVersion                = "default-ray-version"
+	DefaultRayClusterImage           = "default-ray-cluster-image"
+	FirstLoginSettingName            = "first-login"
 )
 
 func init() {

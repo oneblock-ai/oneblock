@@ -9,23 +9,23 @@ import (
 	"k8s.io/client-go/rest"
 
 	wconfig "github.com/oneblock-ai/oneblock/pkg/webhook/config"
-	rayCluster "github.com/oneblock-ai/oneblock/pkg/webhook/resources/kuberay/raycluster"
 	"github.com/oneblock-ai/oneblock/pkg/webhook/resources/modeltemplate"
 	"github.com/oneblock-ai/oneblock/pkg/webhook/resources/notebook"
+	"github.com/oneblock-ai/oneblock/pkg/webhook/resources/raycluster"
 	"github.com/oneblock-ai/oneblock/pkg/webhook/resources/user"
 )
 
 func register(mgmt *wconfig.Management) (validators []admission.Validator, mutators []admission.Mutator) {
 	validators = []admission.Validator{
 		user.NewValidator(mgmt),
-		rayCluster.NewValidator(mgmt),
+		raycluster.NewValidator(mgmt),
 		notebook.NewValidator(),
 		modeltemplate.NewValidator(),
 	}
 
 	mutators = []admission.Mutator{
 		user.NewMutator(),
-		rayCluster.NewMutator(mgmt),
+		raycluster.NewMutator(mgmt),
 		notebook.NewMutator(),
 	}
 

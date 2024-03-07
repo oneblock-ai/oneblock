@@ -37,6 +37,11 @@ func (v *validator) Create(_ *admission.Request, newObj runtime.Object) error {
 	if err := checkRayVersionIsConsistent(cluster); err != nil {
 		return err
 	}
+
+	if err := validateAutoScalingWithWorkerGroupSpecs(cluster); err != nil {
+		return err
+	}
+
 	return validateVolumeClaimTemplatesAnnotation(cluster)
 }
 
@@ -48,6 +53,11 @@ func (v *validator) Update(_ *admission.Request, _, newObj runtime.Object) error
 	if err := checkRayVersionIsConsistent(cluster); err != nil {
 		return err
 	}
+
+	if err := validateAutoScalingWithWorkerGroupSpecs(cluster); err != nil {
+		return err
+	}
+
 	return validateVolumeClaimTemplatesAnnotation(cluster)
 }
 
@@ -72,7 +82,17 @@ func checkRayVersionIsConsistent(cluster *rayv1.RayCluster) error {
 
 func validateImageVersion(image string, version string) error {
 	if !strings.Contains(image, version) {
-		return fmt.Errorf("image: %s is not consistent with cluster ray version %s", image, version)
+		return fmt.Errorf("image: %s is not consistent with raycluster ray version %s", image, version)
+	}
+	return nil
+}
+
+// validateAutoScalingWithWorkerGroupSpecs checks if enableInTreeAutoscaling is true, workerGroupSpecs should be defined
+func validateAutoScalingWithWorkerGroupSpecs(cluster *rayv1.RayCluster) error {
+	if cluster.Spec.EnableInTreeAutoscaling != nil && *cluster.Spec.EnableInTreeAutoscaling == true {
+		if cluster.Spec.WorkerGroupSpecs == nil || len(cluster.Spec.WorkerGroupSpecs) == 0 {
+			return fmt.Errorf("enableInTreeAutoscaling is true, but workerGroupSpecs is not defined")
+		}
 	}
 	return nil
 }
