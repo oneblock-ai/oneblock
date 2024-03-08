@@ -5,6 +5,7 @@ go 1.21
 replace (
 	github.com/NVIDIA/gpu-operator => github.com/oneblock-ai/gpu-operator v0.0.0-20240110024524-05d6fccdf6c4
 	github.com/rancher/dynamiclistener => github.com/oneblock-ai/dynamiclistener v0.0.0-20240125044100-a83225f32ede
+	github.com/rancher/wrangler/v2 => github.com/rancher/wrangler/v2 v2.1.1-0.20240307150436-762039feaaad
 	github.com/ray-project/kuberay/ray-operator => github.com/oneblock-ai/kuberay/ray-operator v0.0.0-20240105083640-d1754c2a30ed
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc => go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.14.0
 	k8s.io/client-go => k8s.io/client-go v0.28.6
@@ -131,13 +132,13 @@ require (
 	google.golang.org/grpc v1.58.2 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	k8s.io/apiextensions-apiserver v0.28.4 // indirect
-	k8s.io/code-generator v0.28.4 // indirect
+	k8s.io/apiextensions-apiserver v0.28.6 // indirect
+	k8s.io/code-generator v0.28.6 // indirect
 	k8s.io/component-base v0.28.6 // indirect
 	k8s.io/gengo v0.0.0-20230829151522-9cce18d56c01 // indirect
 	k8s.io/klog v1.0.0 // indirect
 	k8s.io/klog/v2 v2.110.1 // indirect
-	k8s.io/kube-aggregator v0.28.3 // indirect
+	k8s.io/kube-aggregator v0.28.6 // indirect
 	k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.1.2 // indirect
 	sigs.k8s.io/cli-utils v0.28.0 // indirect

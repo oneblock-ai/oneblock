@@ -13,19 +13,7 @@ spec:
     secretKey: hf_api_token
   mlClusterRef:
     rayClusterSpec:
-      version: 0.5.0
-      image: "anyscale/ray-llm"
-      enableAutoScaling: true
-      headGroupSpec:
-        serviceType: NodePort
-        volume:
-          name: gemma-2b-llm-head-log
-          spec:
-            accessModes:
-              - ReadWriteOnce
-            resources:
-              requests:
-                storage: 5Gi
+      image: "anyscale/ray-llm:0.5.0"
       workerGroupSpec:
       - name: small-wg
         runtimeClassName: nvidia

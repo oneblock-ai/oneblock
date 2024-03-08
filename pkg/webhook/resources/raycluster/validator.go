@@ -2,7 +2,6 @@ package raycluster
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/oneblock-ai/webhook/pkg/server/admission"
 	rayv1 "github.com/ray-project/kuberay/ray-operator/apis/ray/v1"
@@ -34,10 +33,6 @@ func (v *validator) Create(_ *admission.Request, newObj runtime.Object) error {
 
 	logrus.Debugf("[webhook validating]raycluster %s is created", cluster.Name)
 
-	if err := checkRayVersionIsConsistent(cluster); err != nil {
-		return err
-	}
-
 	if err := validateAutoScalingWithWorkerGroupSpecs(cluster); err != nil {
 		return err
 	}
@@ -50,41 +45,11 @@ func (v *validator) Update(_ *admission.Request, _, newObj runtime.Object) error
 
 	logrus.Debugf("[webhook validating]raycluster %s is updated", cluster.Name)
 
-	if err := checkRayVersionIsConsistent(cluster); err != nil {
-		return err
-	}
-
 	if err := validateAutoScalingWithWorkerGroupSpecs(cluster); err != nil {
 		return err
 	}
 
 	return validateVolumeClaimTemplatesAnnotation(cluster)
-}
-
-func checkRayVersionIsConsistent(cluster *rayv1.RayCluster) error {
-	rayVersion := cluster.Spec.RayVersion
-	headContainer := cluster.Spec.HeadGroupSpec.Template.Spec.Containers[0]
-	if err := validateImageVersion(headContainer.Image, rayVersion); err != nil {
-		return err
-	}
-
-	workerSpecs := cluster.Spec.WorkerGroupSpecs
-	for _, spec := range workerSpecs {
-		for _, c := range spec.Template.Spec.Containers {
-			if err := validateImageVersion(c.Image, rayVersion); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
-func validateImageVersion(image string, version string) error {
-	if !strings.Contains(image, version) {
-		return fmt.Errorf("image: %s is not consistent with raycluster ray version %s", image, version)
-	}
-	return nil
 }
 
 // validateAutoScalingWithWorkerGroupSpecs checks if enableInTreeAutoscaling is true, workerGroupSpecs should be defined

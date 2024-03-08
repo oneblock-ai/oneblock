@@ -157,6 +157,10 @@ func patchHeadGroupPorts(cluster *rayv1.RayCluster) []corev1.ContainerPort {
 			Name:          "dashboard",
 			ContainerPort: 8265,
 		},
+		{
+			Name:          "serve",
+			ContainerPort: 8000,
+		},
 	}
 }
 
@@ -193,7 +197,7 @@ func patchResourceLimits(spec corev1.PodTemplateSpec) corev1.ResourceList {
 
 func getRayFTAnnotationPatch(cluster *rayv1.RayCluster) admission.PatchOp {
 	annotations := cluster.Annotations
-	//  REQUIRED: Enables GCS fault tolerance when true
+	// REQUIRED: Enables GCS fault tolerance when true
 	annotations[constant.AnnotationRayFTEnabledKey] = "true"
 
 	return admission.PatchOp{
