@@ -148,7 +148,6 @@ func (h *Handler) OnChange(_ string, mlService *mlv1.MLService) (*mlv1.MLService
 	// updating the RayService if it is modified
 	raySvcCpy := raySvc.DeepCopy()
 	SetRayClusterImage(mlService, raySvcCpy)
-	SetRayClusterHeadConfig(mlService, raySvcCpy)
 	SetRayClusterWorkerGroupConfig(mlService, raySvcCpy)
 	if !reflect.DeepEqual(raySvc.Spec, raySvcCpy.Spec) {
 		logrus.Debugf("updating RayService: %s, spec:%v", raySvcCpy.Name, raySvcCpy.Spec)
@@ -190,11 +189,9 @@ func (h *Handler) createMLServicePVCs(_ string, mlService *mlv1.MLService) (*mlv
 
 	var volumes = make([]mlv1.Volume, 0)
 	var volumeNames = make([]string, 0)
-	headGroupVol := mlService.Spec.MLClusterRef.RayClusterSpec.HeadGroupSpec.Volume
-	if headGroupVol != nil {
-		volumes = append(volumes, *headGroupVol)
-		volumeNames = append(volumeNames, headGroupVol.Name)
-	}
+	headGroupVol := getHeadGroupVolume(mlService)
+	volumes = append(volumes, headGroupVol)
+	volumeNames = append(volumeNames, headGroupVol.Name)
 
 	for _, wg := range mlService.Spec.MLClusterRef.RayClusterSpec.WorkerGroupSpec {
 		if wg.Volume != nil {

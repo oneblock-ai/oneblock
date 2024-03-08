@@ -23,7 +23,6 @@ import (
 const (
 	defaultRayClusterName = "default-cluster"
 	defaultRayPVCName     = defaultRayClusterName + "-log"
-	defaultQueue          = "default"
 )
 
 type handler struct {
@@ -90,7 +89,7 @@ func getDefaultRayCluster(releaseName string) (*rayv1.RayCluster, error) {
 
 	labels := map[string]string{
 		constant.LabelRaySchedulerName: constant.VolcanoSchedulerName,
-		constant.LabelVolcanoQueueName: defaultQueue,
+		constant.LabelVolcanoQueueName: constant.DefaultQueueName,
 	}
 
 	rayStartParams := map[string]string{
@@ -108,7 +107,6 @@ func getDefaultRayCluster(releaseName string) (*rayv1.RayCluster, error) {
 			Labels:      labels,
 		},
 		Spec: rayv1.RayClusterSpec{
-			RayVersion:              settings.RayVersion.Get(),
 			EnableInTreeAutoscaling: pointer.Bool(true),
 			HeadGroupSpec: rayv1.HeadGroupSpec{
 				RayStartParams: rayStartParams,

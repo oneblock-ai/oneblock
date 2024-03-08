@@ -53,21 +53,8 @@ type MLClusterRef struct {
 }
 
 type RayClusterSpec struct {
-	Version string `json:"version,omitempty"`
-	Image   string `json:"image"`
-	// +kubebuilder:default:=true
-	EnableAutoScaling bool              `json:"enableAutoScaling,omitempty"`
-	HeadGroupSpec     HeadGroupSpec     `json:"headGroupSpec,omitempty"`
-	WorkerGroupSpec   []WorkerGroupSpec `json:"workerGroupSpec,omitempty"`
-}
-
-type HeadGroupSpec struct {
-	// ServiceType is Kubernetes service type of the head service. it will be used by the workers to connect to the head pod
-	ServiceType corev1.ServiceType `json:"serviceType,omitempty"`
-	// RayStartParams are the params of the start command: node-manager-port, object-store-memory, ...
-	RayStartParams map[string]string            `json:"rayStartParams,omitempty"`
-	Resources      *corev1.ResourceRequirements `json:"resources,omitempty"`
-	Volume         *Volume                      `json:"volume,omitempty"`
+	Image           string            `json:"image"`
+	WorkerGroupSpec []WorkerGroupSpec `json:"workerGroupSpec,omitempty"`
 }
 
 type WorkerGroupSpec struct {

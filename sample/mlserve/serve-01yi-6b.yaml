@@ -9,19 +9,7 @@ spec:
     namespace: default
   mlClusterRef:
     rayClusterSpec:
-      version: 0.5.0
-      image: "anyscale/ray-llm"
-      enableAutoScaling: true
-      headGroupSpec:
-        serviceType: NodePort
-        volume:
-          name: 01yi-6b-llm-head-log
-          spec:
-            accessModes:
-              - ReadWriteOnce
-            resources:
-              requests:
-                storage: 1Gi
+      image: "anyscale/ray-llm:0.5.0"
       workerGroupSpec:
       - name: small-wg
         runtimeClassName: nvidia

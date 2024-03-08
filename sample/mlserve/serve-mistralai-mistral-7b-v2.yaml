@@ -9,20 +9,7 @@ spec:
     namespace: default
   mlClusterRef:
     rayClusterSpec:
-      version: 0.5.0
-      image: "anyscale/ray-llm"
-      headGroupSpec:
-        rayStartParams:
-          dashboard-host: "0.0.0.0"
-          num-cpus: "0"
-        volume:
-          name: mistral-7b-llm-head-log
-          spec:
-            accessModes:
-            - ReadWriteOnce
-            resources:
-              requests:
-                storage: 5Gi
+      image: "anyscale/ray-llm:0.5.0"
       workerGroupSpec:
       - name: small-wg
         replicas: 1

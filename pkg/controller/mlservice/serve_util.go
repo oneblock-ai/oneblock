@@ -43,6 +43,10 @@ func getRayServiceConfig(mlService *mlv1.MLService, modelTmpVersion *mlv1.ModelT
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      mlService.Name,
 			Namespace: mlService.Namespace,
+			Labels: map[string]string{
+				constant.LabelRaySchedulerName: constant.VolcanoSchedulerName,
+				constant.LabelVolcanoQueueName: constant.DefaultQueueName,
+			},
 			Annotations: map[string]string{
 				constant.AnnotationRayFTEnabledKey:    "true",
 				constant.AnnoModelTemplateVersionName: modelTmpVersion.Name,
