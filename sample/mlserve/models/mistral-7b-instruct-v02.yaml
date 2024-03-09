@@ -1,8 +1,16 @@
 apiVersion: ml.oneblock.ai/v1
+kind: ModelTemplate
+metadata:
+  name: mistral-7b-instruct-v02
+spec:
+  description: "This is a model template for the Yi-6B model from 01.AI."
+---
+apiVersion: ml.oneblock.ai/v1
 kind: ModelTemplateVersion
 metadata:
   name: mistral-7b-instruct-v02
 spec:
+  templateName: mistral-7b-instruct-v02
   # modelID is the ID that refers to the model in the OpenAI API.
   modelID: "mistralai/Mistral-7B-Instruct-v0.2"
   hfModelID: "mistralai/Mistral-7B-Instruct-v0.2"

@@ -22,6 +22,8 @@ type DatasetExpansion interface{}
 
 type MLServiceExpansion interface{}
 
+type ModelTemplateExpansion interface{}
+
 type ModelTemplateVersionExpansion interface{}
 
 type NotebookExpansion interface{}

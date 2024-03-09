@@ -1,8 +1,146 @@
 apiVersion: ml.oneblock.ai/v1
+kind: ModelTemplate
+metadata:
+  name: 01-yi-6b-model
+spec:
+  description: "This is a model template for the Yi-6B model from 01.AI."
+---
+apiVersion: ml.oneblock.ai/v1
 kind: ModelTemplateVersion
 metadata:
   name: 01-yi-6b-model
 spec:
+  templateName: 01-yi-6b-model
+  # modelID is the ID that refers to the model in the OpenAI API.
+  modelID: "01-ai/Yi-6B"
+  hfModelID: "01-ai/Yi-6B"
+  engineConfig:
+    type: VLLMEngine
+    maxTotalTokens: 2048
+    # LLM engine keyword arguments passed when constructing the model.
+    vLLMArgs: |
+      trust_remote_code: true
+      max_num_seq: 16
+      dtype: half
+  deploymentConfig:
+    replicas: 1
+    maxReplicas: 2
+    maxConcurrentQueries: 64
+  scalingConfig:
+    # the GPUs per worker is default to 1, if you want to using multiple GPUs just set numWorkers to be the number of GPUs you want to use.
+    numWorkers: 1
+    numCPUsPerWorker: 3
+---
+apiVersion: ml.oneblock.ai/v1
+kind: ModelTemplateVersion
+metadata:
+  name: 01-yi-6b-model-01
+spec:
+  templateName: 01-yi-6b-model
+  # modelID is the ID that refers to the model in the OpenAI API.
+  modelID: "01-ai/Yi-6B"
+  hfModelID: "01-ai/Yi-6B"
+  engineConfig:
+    type: VLLMEngine
+    maxTotalTokens: 2048
+    # LLM engine keyword arguments passed when constructing the model.
+    vLLMArgs: |
+      trust_remote_code: true
+      max_num_seq: 16
+      dtype: half
+  deploymentConfig:
+    replicas: 1
+    maxReplicas: 2
+    maxConcurrentQueries: 64
+  scalingConfig:
+    # the GPUs per worker is default to 1, if you want to using multiple GPUs just set numWorkers to be the number of GPUs you want to use.
+    numWorkers: 1
+    numCPUsPerWorker: 3
+---
+apiVersion: ml.oneblock.ai/v1
+kind: ModelTemplateVersion
+metadata:
+  name: 01-yi-6b-model-02
+spec:
+  templateName: 01-yi-6b-model
+  # modelID is the ID that refers to the model in the OpenAI API.
+  modelID: "01-ai/Yi-6B"
+  hfModelID: "01-ai/Yi-6B"
+  engineConfig:
+    type: VLLMEngine
+    maxTotalTokens: 2048
+    # LLM engine keyword arguments passed when constructing the model.
+    vLLMArgs: |
+      trust_remote_code: true
+      max_num_seq: 16
+      dtype: half
+  deploymentConfig:
+    replicas: 1
+    maxReplicas: 2
+    maxConcurrentQueries: 64
+  scalingConfig:
+    # the GPUs per worker is default to 1, if you want to using multiple GPUs just set numWorkers to be the number of GPUs you want to use.
+    numWorkers: 1
+    numCPUsPerWorker: 3
+---
+apiVersion: ml.oneblock.ai/v1
+kind: ModelTemplateVersion
+metadata:
+  name: 01-yi-6b-model-03
+spec:
+  templateName: 01-yi-6b-model
+  # modelID is the ID that refers to the model in the OpenAI API.
+  modelID: "01-ai/Yi-6B"
+  hfModelID: "01-ai/Yi-6B"
+  engineConfig:
+    type: VLLMEngine
+    maxTotalTokens: 2048
+    # LLM engine keyword arguments passed when constructing the model.
+    vLLMArgs: |
+      trust_remote_code: true
+      max_num_seq: 16
+      dtype: half
+  deploymentConfig:
+    replicas: 1
+    maxReplicas: 2
+    maxConcurrentQueries: 64
+  scalingConfig:
+    # the GPUs per worker is default to 1, if you want to using multiple GPUs just set numWorkers to be the number of GPUs you want to use.
+    numWorkers: 1
+    numCPUsPerWorker: 3
+---
+apiVersion: ml.oneblock.ai/v1
+kind: ModelTemplateVersion
+metadata:
+  name: 01-yi-6b-model-04
+spec:
+  templateName: 01-yi-6b-model
+  # modelID is the ID that refers to the model in the OpenAI API.
+  modelID: "01-ai/Yi-6B"
+  hfModelID: "01-ai/Yi-6B"
+  engineConfig:
+    type: VLLMEngine
+    maxTotalTokens: 2048
+    # LLM engine keyword arguments passed when constructing the model.
+    vLLMArgs: |
+      trust_remote_code: true
+      max_num_seq: 16
+      dtype: half
+  deploymentConfig:
+    replicas: 1
+    maxReplicas: 2
+    maxConcurrentQueries: 64
+  scalingConfig:
+    # the GPUs per worker is default to 1, if you want to using multiple GPUs just set numWorkers to be the number of GPUs you want to use.
+    numWorkers: 1
+    numCPUsPerWorker: 3
+---
+apiVersion: ml.oneblock.ai/v1
+kind: ModelTemplateVersion
+metadata:
+  name: 01-yi-6b-model-05
+spec:
+  templateName: 01-yi-6b-model
   # modelID is the ID that refers to the model in the OpenAI API.
   modelID: "01-ai/Yi-6B"
   hfModelID: "01-ai/Yi-6B"

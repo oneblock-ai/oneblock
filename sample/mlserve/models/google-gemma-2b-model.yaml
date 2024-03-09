@@ -1,8 +1,16 @@
 apiVersion: ml.oneblock.ai/v1
+kind: ModelTemplate
+metadata:
+  name: google-gemma-2b-model
+spec:
+  description: "This is a model template for the Gemma-2B model from Google"
+---
+apiVersion: ml.oneblock.ai/v1
 kind: ModelTemplateVersion
 metadata:
   name: google-gemma-2b-model
 spec:
+  templateName: google-gemma-2b-model
   # modelID is the ID that refers to the model in the OpenAI API.
   modelID: "google/gemma-2b"
   hfModelID: "google/gemma-2b"

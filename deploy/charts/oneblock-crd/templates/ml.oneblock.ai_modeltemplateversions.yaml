@@ -11,6 +11,9 @@ spec:
     kind: ModelTemplateVersion
     listKind: ModelTemplateVersionList
     plural: modeltemplateversions
+    shortNames:
+    - mtv
+    - mtvs
     singular: modeltemplateversion
   scope: Namespaced
   versions:
@@ -71,6 +74,8 @@ spec:
                 - minReplicas
                 - replicas
                 type: object
+              description:
+                type: string
               engineConfig:
                 description: EngineConfig specifies the model ID, inference engine,
                   and what parameters to use when generating tokens with an LLM.
@@ -173,11 +178,14 @@ spec:
                 - numWorkers
                 - placementStrategy
                 type: object
+              templateName:
+                type: string
             required:
             - deploymentConfig
             - engineConfig
             - modelID
             - scalingConfig
+            - templateName
             type: object
           status:
             properties:
@@ -212,6 +220,10 @@ spec:
                 type: array
               generatedModelConfig:
                 type: string
+              version:
+                type: integer
+            required:
+            - version
             type: object
         type: object
     served: true
