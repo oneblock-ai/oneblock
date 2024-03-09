@@ -60,6 +60,23 @@ func NewMLService(namespace, name string, obj MLService) *MLService {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
+// ModelTemplateList is a list of ModelTemplate resources
+type ModelTemplateList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata"`
+
+	Items []ModelTemplate `json:"items"`
+}
+
+func NewModelTemplate(namespace, name string, obj ModelTemplate) *ModelTemplate {
+	obj.APIVersion, obj.Kind = SchemeGroupVersion.WithKind("ModelTemplate").ToAPIVersionAndKind()
+	obj.Name = name
+	obj.Namespace = namespace
+	return &obj
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
 // ModelTemplateVersionList is a list of ModelTemplateVersion resources
 type ModelTemplateVersionList struct {
 	metav1.TypeMeta `json:",inline"`

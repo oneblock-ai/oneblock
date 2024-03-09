@@ -30,6 +30,7 @@ import (
 var (
 	DatasetResourceName              = "datasets"
 	MLServiceResourceName            = "mlservices"
+	ModelTemplateResourceName        = "modeltemplates"
 	ModelTemplateVersionResourceName = "modeltemplateversions"
 	NotebookResourceName             = "notebooks"
 )
@@ -59,6 +60,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&DatasetList{},
 		&MLService{},
 		&MLServiceList{},
+		&ModelTemplate{},
+		&ModelTemplateList{},
 		&ModelTemplateVersion{},
 		&ModelTemplateVersionList{},
 		&Notebook{},

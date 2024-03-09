@@ -30,7 +30,8 @@ var registerFuncs = []registerFunc{
 	raycluster.Register,
 	gpu.Register,
 	notebook.Register,
-	modeltemplate.Register,
+	modeltemplate.VersionRegister,
+	modeltemplate.TemplateRegister,
 	mlservice.Register,
 }
 

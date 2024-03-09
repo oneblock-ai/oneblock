@@ -26,6 +26,9 @@ const (
 	LabelVolcanoQueueName = "volcano.sh/queue-name"
 	DefaultQueueName      = "default"
 
+	// model constant
+	LabelModelTemplateName = MLPrefix + "modelTemplate"
+
 	AnnotationDefaultSchedulingKey             = "scheduling.oneblock.ai/isDefaultQueue"
 	AnnotationSchedulingSupportedNamespacesKey = "scheduling.oneblock.ai/supportedNamespaces"
 )

@@ -20,6 +20,7 @@ package v1beta1
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/rancher/wrangler/v2/pkg/apply"
@@ -48,10 +49,14 @@ type PodGroupCache interface {
 	generic.NonNamespacedCacheInterface[*v1beta1.PodGroup]
 }
 
+// PodGroupStatusHandler is executed for every added or modified PodGroup. Should return the new status to be updated
 type PodGroupStatusHandler func(obj *v1beta1.PodGroup, status v1beta1.PodGroupStatus) (v1beta1.PodGroupStatus, error)
 
+// PodGroupGeneratingHandler is the top-level handler that is executed for every PodGroup event. It extends PodGroupStatusHandler by a returning a slice of child objects to be passed to apply.Apply
 type PodGroupGeneratingHandler func(obj *v1beta1.PodGroup, status v1beta1.PodGroupStatus) ([]runtime.Object, v1beta1.PodGroupStatus, error)
 
+// RegisterPodGroupStatusHandler configures a PodGroupController to execute a PodGroupStatusHandler for every events observed.
+// If a non-empty condition is provided, it will be updated in the status conditions for every handler execution
 func RegisterPodGroupStatusHandler(ctx context.Context, controller PodGroupController, condition condition.Cond, name string, handler PodGroupStatusHandler) {
 	statusHandler := &podGroupStatusHandler{
 		client:    controller,
@@ -61,6 +66,8 @@ func RegisterPodGroupStatusHandler(ctx context.Context, controller PodGroupContr
 	controller.AddGenericHandler(ctx, name, generic.FromObjectHandlerToHandler(statusHandler.sync))
 }
 
+// RegisterPodGroupGeneratingHandler configures a PodGroupController to execute a PodGroupGeneratingHandler for every events observed, passing the returned objects to the provided apply.Apply.
+// If a non-empty condition is provided, it will be updated in the status conditions for every handler execution
 func RegisterPodGroupGeneratingHandler(ctx context.Context, controller PodGroupController, apply apply.Apply,
 	condition condition.Cond, name string, handler PodGroupGeneratingHandler, opts *generic.GeneratingHandlerOptions) {
 	statusHandler := &podGroupGeneratingHandler{
@@ -82,6 +89,7 @@ type podGroupStatusHandler struct {
 	handler   PodGroupStatusHandler
 }
 
+// sync is executed on every resource addition or modification. Executes the configured handlers and sends the updated status to the Kubernetes API
 func (a *podGroupStatusHandler) sync(key string, obj *v1beta1.PodGroup) (*v1beta1.PodGroup, error) {
 	if obj == nil {
 		return obj, nil
@@ -127,8 +135,10 @@ type podGroupGeneratingHandler struct {
 	opts  generic.GeneratingHandlerOptions
 	gvk   schema.GroupVersionKind
 	name  string
+	seen  sync.Map
 }
 
+// Remove handles the observed deletion of a resource, cascade deleting every associated resource previously applied
 func (a *podGroupGeneratingHandler) Remove(key string, obj *v1beta1.PodGroup) (*v1beta1.PodGroup, error) {
 	if obj != nil {
 		return obj, nil
@@ -138,12 +148,17 @@ func (a *podGroupGeneratingHandler) Remove(key string, obj *v1beta1.PodGroup) (*
 	obj.Namespace, obj.Name = kv.RSplit(key, "/")
 	obj.SetGroupVersionKind(a.gvk)
 
+	if a.opts.UniqueApplyForResourceVersion {
+		a.seen.Delete(key)
+	}
+
 	return nil, generic.ConfigureApplyForObject(a.apply, obj, &a.opts).
 		WithOwner(obj).
 		WithSetID(a.name).
 		ApplyObjects()
 }
 
+// Handle executes the configured PodGroupGeneratingHandler and pass the resulting objects to apply.Apply, finally returning the new status of the resource
 func (a *podGroupGeneratingHandler) Handle(obj *v1beta1.PodGroup, status v1beta1.PodGroupStatus) (v1beta1.PodGroupStatus, error) {
 	if !obj.DeletionTimestamp.IsZero() {
 		return status, nil
@@ -153,9 +168,41 @@ func (a *podGroupGeneratingHandler) Handle(obj *v1beta1.PodGroup, status v1beta1
 	if err != nil {
 		return newStatus, err
 	}
+	if !a.isNewResourceVersion(obj) {
+		return newStatus, nil
+	}
 
-	return newStatus, generic.ConfigureApplyForObject(a.apply, obj, &a.opts).
+	err = generic.ConfigureApplyForObject(a.apply, obj, &a.opts).
 		WithOwner(obj).
 		WithSetID(a.name).
 		ApplyObjects(objs...)
+	if err != nil {
+		return newStatus, err
+	}
+	a.storeResourceVersion(obj)
+	return newStatus, nil
+}
+
+// isNewResourceVersion detects if a specific resource version was already successfully processed.
+// Only used if UniqueApplyForResourceVersion is set in generic.GeneratingHandlerOptions
+func (a *podGroupGeneratingHandler) isNewResourceVersion(obj *v1beta1.PodGroup) bool {
+	if !a.opts.UniqueApplyForResourceVersion {
+		return true
+	}
+
+	// Apply once per resource version
+	key := obj.Namespace + "/" + obj.Name
+	previous, ok := a.seen.Load(key)
+	return !ok || previous != obj.ResourceVersion
+}
+
+// storeResourceVersion keeps track of the latest resource version of an object for which Apply was executed
+// Only used if UniqueApplyForResourceVersion is set in generic.GeneratingHandlerOptions
+func (a *podGroupGeneratingHandler) storeResourceVersion(obj *v1beta1.PodGroup) {
+	if !a.opts.UniqueApplyForResourceVersion {
+		return
+	}
+
+	key := obj.Namespace + "/" + obj.Name
+	a.seen.Store(key, obj.ResourceVersion)
 }

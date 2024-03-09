@@ -36,6 +36,10 @@ func (c *FakeMlV1) MLServices(namespace string) v1.MLServiceInterface {
 	return &FakeMLServices{c, namespace}
 }
 
+func (c *FakeMlV1) ModelTemplates(namespace string) v1.ModelTemplateInterface {
+	return &FakeModelTemplates{c, namespace}
+}
+
 func (c *FakeMlV1) ModelTemplateVersions(namespace string) v1.ModelTemplateVersionInterface {
 	return &FakeModelTemplateVersions{c, namespace}
 }

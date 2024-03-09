@@ -34,31 +34,31 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// NotebookController interface for managing Notebook resources.
-type NotebookController interface {
-	generic.ControllerInterface[*v1.Notebook, *v1.NotebookList]
+// ModelTemplateController interface for managing ModelTemplate resources.
+type ModelTemplateController interface {
+	generic.ControllerInterface[*v1.ModelTemplate, *v1.ModelTemplateList]
 }
 
-// NotebookClient interface for managing Notebook resources in Kubernetes.
-type NotebookClient interface {
-	generic.ClientInterface[*v1.Notebook, *v1.NotebookList]
+// ModelTemplateClient interface for managing ModelTemplate resources in Kubernetes.
+type ModelTemplateClient interface {
+	generic.ClientInterface[*v1.ModelTemplate, *v1.ModelTemplateList]
 }
 
-// NotebookCache interface for retrieving Notebook resources in memory.
-type NotebookCache interface {
-	generic.CacheInterface[*v1.Notebook]
+// ModelTemplateCache interface for retrieving ModelTemplate resources in memory.
+type ModelTemplateCache interface {
+	generic.CacheInterface[*v1.ModelTemplate]
 }
 
-// NotebookStatusHandler is executed for every added or modified Notebook. Should return the new status to be updated
-type NotebookStatusHandler func(obj *v1.Notebook, status v1.NotebookStatus) (v1.NotebookStatus, error)
+// ModelTemplateStatusHandler is executed for every added or modified ModelTemplate. Should return the new status to be updated
+type ModelTemplateStatusHandler func(obj *v1.ModelTemplate, status v1.ModelTemplateStatus) (v1.ModelTemplateStatus, error)
 
-// NotebookGeneratingHandler is the top-level handler that is executed for every Notebook event. It extends NotebookStatusHandler by a returning a slice of child objects to be passed to apply.Apply
-type NotebookGeneratingHandler func(obj *v1.Notebook, status v1.NotebookStatus) ([]runtime.Object, v1.NotebookStatus, error)
+// ModelTemplateGeneratingHandler is the top-level handler that is executed for every ModelTemplate event. It extends ModelTemplateStatusHandler by a returning a slice of child objects to be passed to apply.Apply
+type ModelTemplateGeneratingHandler func(obj *v1.ModelTemplate, status v1.ModelTemplateStatus) ([]runtime.Object, v1.ModelTemplateStatus, error)
 
-// RegisterNotebookStatusHandler configures a NotebookController to execute a NotebookStatusHandler for every events observed.
+// RegisterModelTemplateStatusHandler configures a ModelTemplateController to execute a ModelTemplateStatusHandler for every events observed.
 // If a non-empty condition is provided, it will be updated in the status conditions for every handler execution
-func RegisterNotebookStatusHandler(ctx context.Context, controller NotebookController, condition condition.Cond, name string, handler NotebookStatusHandler) {
-	statusHandler := &notebookStatusHandler{
+func RegisterModelTemplateStatusHandler(ctx context.Context, controller ModelTemplateController, condition condition.Cond, name string, handler ModelTemplateStatusHandler) {
+	statusHandler := &modelTemplateStatusHandler{
 		client:    controller,
 		condition: condition,
 		handler:   handler,
@@ -66,31 +66,31 @@ func RegisterNotebookStatusHandler(ctx context.Context, controller NotebookContr
 	controller.AddGenericHandler(ctx, name, generic.FromObjectHandlerToHandler(statusHandler.sync))
 }
 
-// RegisterNotebookGeneratingHandler configures a NotebookController to execute a NotebookGeneratingHandler for every events observed, passing the returned objects to the provided apply.Apply.
+// RegisterModelTemplateGeneratingHandler configures a ModelTemplateController to execute a ModelTemplateGeneratingHandler for every events observed, passing the returned objects to the provided apply.Apply.
 // If a non-empty condition is provided, it will be updated in the status conditions for every handler execution
-func RegisterNotebookGeneratingHandler(ctx context.Context, controller NotebookController, apply apply.Apply,
-	condition condition.Cond, name string, handler NotebookGeneratingHandler, opts *generic.GeneratingHandlerOptions) {
-	statusHandler := &notebookGeneratingHandler{
-		NotebookGeneratingHandler: handler,
-		apply:                     apply,
-		name:                      name,
-		gvk:                       controller.GroupVersionKind(),
+func RegisterModelTemplateGeneratingHandler(ctx context.Context, controller ModelTemplateController, apply apply.Apply,
+	condition condition.Cond, name string, handler ModelTemplateGeneratingHandler, opts *generic.GeneratingHandlerOptions) {
+	statusHandler := &modelTemplateGeneratingHandler{
+		ModelTemplateGeneratingHandler: handler,
+		apply:                          apply,
+		name:                           name,
+		gvk:                            controller.GroupVersionKind(),
 	}
 	if opts != nil {
 		statusHandler.opts = *opts
 	}
 	controller.OnChange(ctx, name, statusHandler.Remove)
-	RegisterNotebookStatusHandler(ctx, controller, condition, name, statusHandler.Handle)
+	RegisterModelTemplateStatusHandler(ctx, controller, condition, name, statusHandler.Handle)
 }
 
-type notebookStatusHandler struct {
-	client    NotebookClient
+type modelTemplateStatusHandler struct {
+	client    ModelTemplateClient
 	condition condition.Cond
-	handler   NotebookStatusHandler
+	handler   ModelTemplateStatusHandler
 }
 
 // sync is executed on every resource addition or modification. Executes the configured handlers and sends the updated status to the Kubernetes API
-func (a *notebookStatusHandler) sync(key string, obj *v1.Notebook) (*v1.Notebook, error) {
+func (a *modelTemplateStatusHandler) sync(key string, obj *v1.ModelTemplate) (*v1.ModelTemplate, error) {
 	if obj == nil {
 		return obj, nil
 	}
@@ -129,8 +129,8 @@ func (a *notebookStatusHandler) sync(key string, obj *v1.Notebook) (*v1.Notebook
 	return obj, err
 }
 
-type notebookGeneratingHandler struct {
-	NotebookGeneratingHandler
+type modelTemplateGeneratingHandler struct {
+	ModelTemplateGeneratingHandler
 	apply apply.Apply
 	opts  generic.GeneratingHandlerOptions
 	gvk   schema.GroupVersionKind
@@ -139,12 +139,12 @@ type notebookGeneratingHandler struct {
 }
 
 // Remove handles the observed deletion of a resource, cascade deleting every associated resource previously applied
-func (a *notebookGeneratingHandler) Remove(key string, obj *v1.Notebook) (*v1.Notebook, error) {
+func (a *modelTemplateGeneratingHandler) Remove(key string, obj *v1.ModelTemplate) (*v1.ModelTemplate, error) {
 	if obj != nil {
 		return obj, nil
 	}
 
-	obj = &v1.Notebook{}
+	obj = &v1.ModelTemplate{}
 	obj.Namespace, obj.Name = kv.RSplit(key, "/")
 	obj.SetGroupVersionKind(a.gvk)
 
@@ -158,13 +158,13 @@ func (a *notebookGeneratingHandler) Remove(key string, obj *v1.Notebook) (*v1.No
 		ApplyObjects()
 }
 
-// Handle executes the configured NotebookGeneratingHandler and pass the resulting objects to apply.Apply, finally returning the new status of the resource
-func (a *notebookGeneratingHandler) Handle(obj *v1.Notebook, status v1.NotebookStatus) (v1.NotebookStatus, error) {
+// Handle executes the configured ModelTemplateGeneratingHandler and pass the resulting objects to apply.Apply, finally returning the new status of the resource
+func (a *modelTemplateGeneratingHandler) Handle(obj *v1.ModelTemplate, status v1.ModelTemplateStatus) (v1.ModelTemplateStatus, error) {
 	if !obj.DeletionTimestamp.IsZero() {
 		return status, nil
 	}
 
-	objs, newStatus, err := a.NotebookGeneratingHandler(obj, status)
+	objs, newStatus, err := a.ModelTemplateGeneratingHandler(obj, status)
 	if err != nil {
 		return newStatus, err
 	}
@@ -185,7 +185,7 @@ func (a *notebookGeneratingHandler) Handle(obj *v1.Notebook, status v1.NotebookS
 
 // isNewResourceVersion detects if a specific resource version was already successfully processed.
 // Only used if UniqueApplyForResourceVersion is set in generic.GeneratingHandlerOptions
-func (a *notebookGeneratingHandler) isNewResourceVersion(obj *v1.Notebook) bool {
+func (a *modelTemplateGeneratingHandler) isNewResourceVersion(obj *v1.ModelTemplate) bool {
 	if !a.opts.UniqueApplyForResourceVersion {
 		return true
 	}
@@ -198,7 +198,7 @@ func (a *notebookGeneratingHandler) isNewResourceVersion(obj *v1.Notebook) bool 
 
 // storeResourceVersion keeps track of the latest resource version of an object for which Apply was executed
 // Only used if UniqueApplyForResourceVersion is set in generic.GeneratingHandlerOptions
-func (a *notebookGeneratingHandler) storeResourceVersion(obj *v1.Notebook) {
+func (a *modelTemplateGeneratingHandler) storeResourceVersion(obj *v1.ModelTemplate) {
 	if !a.opts.UniqueApplyForResourceVersion {
 		return
 	}

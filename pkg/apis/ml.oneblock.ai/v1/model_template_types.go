@@ -8,8 +8,46 @@ import (
 )
 
 var (
+	ModelTemplateDefaultVersionAssigned condition.Cond = "defaultVersionAssigned"
+
 	ModelTemplateVersionConfigured condition.Cond = "configured"
+	ModelTemplateVersionAssigned   condition.Cond = "assigned"
 )
+
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +kubebuilder:resource:shortName=mt;mts
+// +kubebuilder:subresource:status
+// +kubebuilder:scope=Namespaced
+// +kubebuilder:printcolumn:name="VERSION_ID",type=string,JSONPath=`.spec.defaultVersionId`
+// +kubebuilder:printcolumn:name="DEFAULT_VERSION",type=integer,priority=8,JSONPath=`.status.defaultVersion`
+// +kubebuilder:printcolumn:name="LATEST_VERSION",type=integer,priority=8,JSONPath=`.status.latestVersion`
+// +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=`.metadata.creationTimestamp`
+
+// ModelTemplate is the Schema for the LLM template
+type ModelTemplate struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   ModelTemplateSpec   `json:"spec,omitempty"`
+	Status ModelTemplateStatus `json:"status,omitempty"`
+}
+
+type ModelTemplateSpec struct {
+	// +optional
+	Description string `json:"description,omitempty"`
+	// +optional
+	DefaultVersionID string `json:"defaultVersionId,omitempty"`
+}
+
+type ModelTemplateStatus struct {
+	Conditions []v1.Condition `json:"conditions,omitempty"`
+	// +optional
+	DefaultVersion int `json:"defaultVersion,omitempty"`
+	// +optional
+	LatestVersion      int   `json:"latestVersion,omitempty"`
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+}
 
 type EngineType string
 
@@ -28,6 +66,7 @@ const (
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +kubebuilder:resource:shortName=mtv;mtvs
 // +kubebuilder:subresource:status
 // +kubebuilder:scope=Namespaced
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=`.metadata.creationTimestamp`
@@ -42,6 +81,10 @@ type ModelTemplateVersion struct {
 }
 
 type ModelTemplateVersionSpec struct {
+	// +kubebuilder:validation:Required
+	TemplateName string `json:"templateName"`
+	// +optional
+	Description string `json:"description,omitempty"`
 	// +kubebuilder:validation:Required
 	// ModelID is the ID that refers to the model in the OpenAI API.
 	ModelID string `json:"modelID"`
@@ -134,4 +177,5 @@ type ModelTemplateVersionStatus struct {
 	// Conditions is an array of current conditions
 	Conditions           []v1.Condition `json:"conditions,omitempty"`
 	GeneratedModelConfig string         `json:"generatedModelConfig,omitempty"`
+	Version              int            `json:"version"`
 }
