@@ -12,5 +12,9 @@ func Init(ctx context.Context, mgmt *config.Management, name string) error {
 		return err
 	}
 
+	if err := addDefaultQueue(mgmt); err != nil {
+		return err
+	}
+
 	return addDefaultPublicRayCluster(ctx, mgmt, name)
 }
