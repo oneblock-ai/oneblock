@@ -19,8 +19,8 @@ require (
 	github.com/oneblock-ai/apiserver/v2 v2.0.0-20231114064046-774061122f09
 	github.com/oneblock-ai/steve/v2 v2.0.0-20240125064017-1d53c4622676
 	github.com/oneblock-ai/webhook v0.0.0-20240122084603-b51d23225312
-	github.com/onsi/ginkgo/v2 v2.11.0
-	github.com/onsi/gomega v1.27.10
+	github.com/onsi/ginkgo/v2 v2.13.0
+	github.com/onsi/gomega v1.29.0
 	github.com/pkg/errors v0.9.1
 	github.com/rancher/dynamiclistener v1.27.5
 	github.com/rancher/kubernetes-provider-detector v0.1.5
@@ -29,13 +29,13 @@ require (
 	github.com/ray-project/kuberay/ray-operator v1.0.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.0
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	golang.org/x/crypto v0.16.0
 	gopkg.in/square/go-jose.v2 v2.6.0
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.28.6
-	k8s.io/apimachinery v0.28.6
+	k8s.io/apimachinery v0.29.2
 	k8s.io/apiserver v0.28.6
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/utils v0.0.0-20231121161247-cf03d44ff3cf
@@ -139,7 +139,7 @@ require (
 	k8s.io/klog v1.0.0 // indirect
 	k8s.io/klog/v2 v2.110.1 // indirect
 	k8s.io/kube-aggregator v0.28.6 // indirect
-	k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9 // indirect
+	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.1.2 // indirect
 	sigs.k8s.io/cli-utils v0.28.0 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
