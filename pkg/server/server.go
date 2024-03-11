@@ -9,6 +9,7 @@ import (
 	"github.com/rancher/wrangler/v2/pkg/ratelimit"
 	"k8s.io/client-go/rest"
 
+	apischema "github.com/oneblock-ai/oneblock/pkg/api"
 	oneblockAuth "github.com/oneblock-ai/oneblock/pkg/api/auth"
 	"github.com/oneblock-ai/oneblock/pkg/controller"
 	"github.com/oneblock-ai/oneblock/pkg/data"
@@ -102,7 +103,11 @@ func New(opts Options) (*Server, error) {
 		return nil, err
 	}
 
-	if err := controller.Register(opts.Context, s.mgmt, opts.Threadiness); err != nil {
+	if err = controller.Register(opts.Context, s.mgmt, opts.Threadiness); err != nil {
+		return nil, err
+	}
+
+	if err = apischema.Register(opts.Context, s.mgmt, s.steveServer); err != nil {
 		return nil, err
 	}
 
