@@ -9,7 +9,7 @@ spec:
   template:
     spec:
       containers:
-      - image: 	kubeflownotebookswg/codeserver-python:v1.8.0
+      - image: oneblockai/codeserver-python:latest
         name: nb-code-server
         resources:
           requests:

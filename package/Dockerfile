@@ -17,7 +17,7 @@ ENV ONEBLOCK_SERVER_VERSION ${VERSION}
 
 RUN mkdir -p /usr/share/oneblock-ai/oneblock && \
     cd /usr/share/oneblock-ai/oneblock && \
-    curl -sL https://releases.rancher.com/dashboard/${ONEBLOCK_UI_VERSION}.tar.gz | tar xvzf - --strip-components=2 && \
+    curl -sL https://releases.1block.ai/dashboard/${ONEBLOCK_UI_VERSION}.tar.gz | tar xvzf - --strip-components=2 && \
     mkdir -p /usr/share/oneblock-ai/oneblock/api-ui && \
     cd /usr/share/oneblock-ai/oneblock/api-ui && \
     curl -sL https://releases.rancher.com/api-ui/${ONEBLOCK_API_UI_VERSION}.tar.gz | tar xvzf - --strip-components=1 && \
