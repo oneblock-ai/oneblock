@@ -10,7 +10,7 @@ spec:
   template:
     spec:
       containers:
-      - image: kubeflownotebookswg/jupyter-scipy:v1.8.0
+      - image: oneblockai/jupyter-scipy:latest
         name: nb-jupyter
         resources:
           requests:

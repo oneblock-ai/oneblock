@@ -12,7 +12,7 @@ type Image struct {
 	Default        bool   `json:"default,omitempty"`
 }
 
-const defaultImgVersion = "v1.8.0"
+const defaultImgVersion = "latest"
 
 // SetDefaultNotebookImages set default notebook images
 // resources please refer to: https://www.kubeflow.org/docs/components/notebooks/container-images/
@@ -20,53 +20,53 @@ func setDefaultNotebookImages() string {
 	defaultImgs := map[string][]Image{
 		"jupyter": {
 			{
-				ContainerImage: "kubeflownotebookswg/jupyter-scipy:" + defaultImgVersion,
+				ContainerImage: "oneblockai/jupyter-scipy:" + defaultImgVersion,
 				Description:    "JupyterLab + PyTorch",
 				Default:        true,
 			},
 			{
-				ContainerImage: "kubeflownotebookswg/jupyter-pytorch:" + defaultImgVersion,
+				ContainerImage: "oneblockai/jupyter-pytorch:" + defaultImgVersion,
 				Description:    "JupyterLab + PyTorch",
 			},
 			{
-				ContainerImage: "kubeflownotebookswg/jupyter-pytorch-full:" + defaultImgVersion,
+				ContainerImage: "oneblockai/jupyter-pytorch-full:" + defaultImgVersion,
 				Description:    "JupyterLab + PyTorch + Common Packages",
 			},
 			{
-				ContainerImage: "kubeflownotebookswg/jupyter-pytorch-cuda:" + defaultImgVersion,
+				ContainerImage: "oneblockai/jupyter-pytorch-cuda:" + defaultImgVersion,
 				Description:    "JupyterLab + PyTorch + CUDA",
 			},
 			{
-				ContainerImage: "kubeflownotebookswg/jupyter-pytorch-cuda-full:" + defaultImgVersion,
+				ContainerImage: "oneblockai/jupyter-pytorch-cuda-full:" + defaultImgVersion,
 				Description:    "JupyterLab + PyTorch + CUDA + Common Packages",
 			},
 			{
-				ContainerImage: "kubeflownotebookswg/jupyter-tensorflow:" + defaultImgVersion,
+				ContainerImage: "oneblockai/jupyter-tensorflow:" + defaultImgVersion,
 				Description:    "JupyterLab + PyTorch",
 			},
 			{
-				ContainerImage: "kubeflownotebookswg/jupyter-tensorflow-full:" + defaultImgVersion,
+				ContainerImage: "oneblockai/jupyter-tensorflow-full:" + defaultImgVersion,
 				Description:    "JupyterLab + PyTorch + Common Packages",
 			},
 			{
-				ContainerImage: "kubeflownotebookswg/jupyter-tensorflow-cuda:" + defaultImgVersion,
+				ContainerImage: "oneblockai/jupyter-tensorflow-cuda:" + defaultImgVersion,
 				Description:    "JupyterLab + PyTorch + CUDA",
 			},
 			{
-				ContainerImage: "kubeflownotebookswg/jupyter-tensorflow-cuda-full:" + defaultImgVersion,
+				ContainerImage: "oneblockai/jupyter-tensorflow-cuda-full:" + defaultImgVersion,
 				Description:    "JupyterLab + PyTorch + CUDA + Common Packages",
 			},
 		},
 		"code-server": {
 			{
-				ContainerImage: "kubeflownotebookswg/codeserver-python:" + defaultImgVersion,
+				ContainerImage: "oneblockai/codeserver-python:" + defaultImgVersion,
 				Description:    "Visual Studio Code + Conda Python",
 				Default:        true,
 			},
 		},
 		"rstudio": {
 			{
-				ContainerImage: "kubeflownotebookswg/rstudio-tidyverse:" + defaultImgVersion,
+				ContainerImage: "oneblockai/rstudio-tidyverse:" + defaultImgVersion,
 				Description:    "RStudio + Tidyverse",
 				Default:        true,
 			},
