@@ -24,7 +24,7 @@ const (
 	// Volcano constant
 	VolcanoSchedulerName  = "volcano"
 	LabelVolcanoQueueName = "volcano.sh/queue-name"
-	DefaultQueueName      = "default"
+	DefaultQueueName      = "oneblock-default"
 
 	// model constant
 	LabelModelTemplateName = MLPrefix + "modelTemplate"
