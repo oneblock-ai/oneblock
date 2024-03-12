@@ -33,7 +33,6 @@ import (
 const (
 	DefaultContainerPort = int32(8888)
 	DefaultServingPort   = 80
-	PrefixEnvVar         = "NB_PREFIX"
 
 	// DefaultFSGroup The default fsGroup of PodSecurityContext.
 	// https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#podsecuritycontext-v1-core
@@ -206,8 +205,6 @@ func getNoteBookStatefulSet(notebook *mlv1.Notebook) *v1.StatefulSet {
 		}
 	}
 
-	setPrefixEnvVar(notebook, container)
-
 	// For some platforms (like OpenShift), adding fsGroup: 100 is troublesome.
 	// This allows for those platforms to bypass the automatic addition of the fsGroup
 	// and will allow for the Pod Security Policy controller to make an appropriate choice
@@ -221,22 +218,6 @@ func getNoteBookStatefulSet(notebook *mlv1.Notebook) *v1.StatefulSet {
 		}
 	}
 	return ss
-}
-
-func setPrefixEnvVar(notebook *mlv1.Notebook, container *corev1.Container) {
-	prefix := "/notebook/" + notebook.Namespace + "/" + notebook.Name
-
-	for _, envVar := range container.Env {
-		if envVar.Name == PrefixEnvVar {
-			envVar.Value = prefix
-			return
-		}
-	}
-
-	container.Env = append(container.Env, corev1.EnvVar{
-		Name:  PrefixEnvVar,
-		Value: prefix,
-	})
 }
 
 func (h *Handler) generateService(notebook *mlv1.Notebook) error {
